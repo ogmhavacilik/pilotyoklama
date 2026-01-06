@@ -1014,14 +1014,6 @@
                     modified = true;
                 }
                 
-                if (!updatedAc.find(a => a.model === AircraftModel.TEKNIK_EKIP)) {
-                    updatedAc.push({ id: '24', tailNumber: 'MERKEZ', model: AircraftModel.TEKNIK_EKIP, category: AircraftCategory.TECHNICAL, city: 'Ankara' });
-                    modified = true;
-                }
-                if (!updatedAc.find(a => a.model === AircraftModel.YER_DESTEK)) {
-                    updatedAc.push({ id: '25', tailNumber: 'DESTEK', model: AircraftModel.YER_DESTEK, category: AircraftCategory.GROUND, city: 'Ankara' });
-                    modified = true;
-                }
                 if (!updatedAc.find(a => a.model === AircraftModel.IDARI_BIRIM)) {
                     updatedAc.push({ id: '26', tailNumber: 'İDARİ', model: AircraftModel.IDARI_BIRIM, category: AircraftCategory.ADMINISTRATIVE, city: 'Ankara' });
                     modified = true;
@@ -1996,7 +1988,7 @@
                                     {stat.techMissing && <span className="text-[10px] bg-red-600 px-2 py-0.5 rounded mt-1 animate-pulse w-full block">TEKNİSYEN GİRİLMEDİ</span>}
                                 </button>
                             )})}
-                            {/* Special Units: Teknik Ekip, Yer Destek, İdari Birim */}
+                            {/* Special Units:İdari Birim */}
                             {models.filter(m => [AircraftModel.TEKNIK_EKIP, AircraftModel.YER_DESTEK, AircraftModel.IDARI_BIRIM].includes(m)).map(m => {
                                 const stat = dashboardStatus[m] || { techMissing: false, groundMissing: false };
                                 const hasIssue = stat.techMissing || stat.groundMissing;
