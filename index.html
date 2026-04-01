@@ -1632,6 +1632,15 @@
                     let targetP = [...finalPersonnel];
                     const startDateForFilter = isDaily ? getTodayString() : dates.start, endDateForFilter = isDaily ? getTodayString() : dates.end;
                     targetP = targetP.filter(p => !(p.activeUntil && p.activeUntil < startDateForFilter) && !(p.activeFrom && p.activeFrom > endDateForFilter));
+                    
+                    if (reportUnit && reportUnit !== 'TÜM BİRİMLER') {
+                        targetP = targetP.filter(p => fUK(p) === reportUnit);
+                    }
+                    if (reportSearch && reportSearch.trim()) {
+                        const s = reportSearch.toLocaleLowerCase('tr-TR');
+                        targetP = targetP.filter(p => p.fullName.toLocaleLowerCase('tr-TR').includes(s));
+                    }
+
                     targetP.sort((a, b) => { 
                         const uA = fUK(a); 
                         const uB = fUK(b); 
@@ -1656,32 +1665,74 @@
                     targetP.forEach(p => {
                         days.forEach(d => {
                             const dStr = normalizeDate(d), r = freshRecs.find(x => x.personId === p.id && x.date === dStr);
-                            const absenceStates = [AttendanceStatus.LEAVE, AttendanceStatus.SICK, AttendanceStatus.HOSPITAL, AttendanceStatus.PUBLIC_HOLIDAY, AttendanceStatus.ABSENT, AttendanceStatus.DUTY, AttendanceStatus.COURSE];
+                            const absenceStates = [AttendanceStatus.LEAVE, AttendanceStatus.SICK, AttendanceStatus.HOSPITAL, AttendanceStatus.PUBLIC_HOLIDAY, AttendanceStatus.ABSENT, AttendanceStatus.DUTY, AttendanceStatus.COURSE, AttendanceStatus.OTHER];
                             if (r && absenceStates.includes(r.status)) {
+                                // Skip "GGG" from absentee list as they are technically present but from another unit
+                                if (r.status === AttendanceStatus.OTHER && r.note && r.note.toLocaleUpperCase('tr-TR') === 'GGG') return;
+
                                 uniqueAbsentIds.add(p.id);
                                 const pRecs = freshRecs.filter(x => x.personId === p.id).sort((a,b) => a.date.localeCompare(b.date));
                                 let curIdx = pRecs.findIndex(x => x.date === dStr);
-                                let sI = curIdx; while(sI > 0 && absenceStates.includes(pRecs[sI-1].status)) sI--;
-                                let eI = curIdx; while(eI < pRecs.length - 1 && absenceStates.includes(pRecs[eI+1].status)) eI++;
-                                const rStart = pRecs[sI].date, rEnd = pRecs[eI].date, key = `${p.id}-${rStart}-${rEnd}`;
+                                let sI = curIdx; 
+                                while(sI > 0) {
+                                    const prev = pRecs[sI-1], curr = pRecs[sI];
+                                    const d1 = new Date(curr.date), d2 = new Date(prev.date);
+                                    const diff = Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
+                                    if (diff <= 3 && prev.status === curr.status && prev.dutyLocation === curr.dutyLocation && prev.leaveType === curr.leaveType && prev.note === curr.note) sI--;
+                                    else break;
+                                }
+                                let eI = curIdx;
+                                while(eI < pRecs.length - 1) {
+                                    const next = pRecs[eI+1], curr = pRecs[eI];
+                                    const d1 = new Date(next.date), d2 = new Date(curr.date);
+                                    const diff = Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
+                                    if (diff <= 3 && next.status === curr.status && next.dutyLocation === curr.dutyLocation && next.leaveType === curr.leaveType && next.note === curr.note) eI++;
+                                    else break;
+                                }
+                                const rStart = pRecs[sI].date, rEnd = pRecs[eI].date, key = `${p.id}-${rStart}-${rEnd}-${r.status}`;
                                 if (!addedPeriods.has(key)) {
                                     addedPeriods.add(key); let totalG = 0; let hasR = false;
                                     for(let k = sI; k <= eI; k++) { totalG += (pRecs[k].leaveType === LeaveType.HALF_DAY || pRecs[k].leaveType === LeaveType.HALF_OVERTIME ? 0.5 : 1); if(pRecs[k].status === AttendanceStatus.SICK || pRecs[k].status === AttendanceStatus.HOSPITAL) hasR = true; }
-                                    let turL = r.status === AttendanceStatus.LEAVE ? r.leaveType : (r.status === AttendanceStatus.DUTY ? 'GÖREV' : (r.status === AttendanceStatus.COURSE ? 'KURS' : r.status)); 
+                                    let turL = r.status === AttendanceStatus.LEAVE ? r.leaveType : (r.status === AttendanceStatus.DUTY ? 'GÖREV' : (r.status === AttendanceStatus.COURSE ? 'KURS' : (r.status === AttendanceStatus.ABSENT ? 'YOK' : (r.status === AttendanceStatus.OTHER ? (r.note || 'DİĞER') : r.status)))); 
                                     if(hasR) turL = pRecs.slice(sI, eI+1).find(x => x.status === AttendanceStatus.SICK || x.status === AttendanceStatus.HOSPITAL).status === AttendanceStatus.SICK ? 'RAPOR' : 'HASTANE';
+                                    if (r.status === AttendanceStatus.DUTY || r.status === AttendanceStatus.COURSE) {
+                                        const loc = r.dutyLocation ? `(${r.dutyLocation.toLocaleUpperCase('tr-TR')})` : '';
+                                        turL += loc;
+                                    }
+                                    if (r.status === AttendanceStatus.OTHER && r.note) {
+                                        turL = r.note.toLocaleUpperCase('tr-TR');
+                                    }
                                     beyanList.push({ ad: p.fullName, birim: fUK(p), tur: turL, start: rStart, end: rEnd, gun: totalG });
                                 }
                             }
                         });
                     });
+                    const dynamicOtherNotes = new Set();
+                    targetP.forEach(p => {
+                        days.forEach(d => {
+                            const dStr = normalizeDate(d), r = freshRecs.find(x => x.personId === p.id && x.date === dStr);
+                            if (r && r.status === AttendanceStatus.OTHER && r.note) {
+                                const noteUpper = r.note.toLocaleUpperCase('tr-TR').trim();
+                                if (noteUpper !== 'GGG') dynamicOtherNotes.add(noteUpper);
+                            }
+                        });
+                    });
+                    const dynamicOtherCols = Array.from(dynamicOtherNotes).sort().map(note => ({
+                        key: `other_${note.replace(/[^A-Z0-9]/g, '_')}`,
+                        label: `D-${note}`,
+                        note: note
+                    }));
+
                     const totalFixed = targetP.length, gayriMevcutCount = uniqueAbsentIds.size, hazirCount = totalFixed - gayriMevcutCount;
                     const allPossibleCols = [
                         { key: 'w', label: 'X' }, { key: 'ht', label: 'HT' }, 
                         { key: 'gp', label: 'PLANLI' }, { key: 'gu', label: 'PLANSIZ' },
-                        { key: 'yi', label: 'Yİ' }, { key: 'mi', label: 'Mİ' }, { key: 'gi', label: 'Gİ' }, { key: 'ygi', label: 'YGİ' }, { key: 'fmi', label: 'FMİ' }, { key: 'yfmi', label: 'YFMİ' }, { key: 'rt', label: 'İİ' }, { key: 'r', label: 'R' }, { key: 'h', label: 'H' }, { key: 'k', label: 'K' }, { key: 'ot', label: 'D' }, { key: 'dggg', label: 'D-GGG' }
+                        { key: 'yi', label: 'Yİ' }, { key: 'mi', label: 'Mİ' }, { key: 'gi', label: 'Gİ' }, { key: 'ygi', label: 'YGİ' }, { key: 'fmi', label: 'FMİ' }, { key: 'yfmi', label: 'YFMİ' }, { key: 'rt', label: 'İİ' }, { key: 'r', label: 'R' }, { key: 'h', label: 'H' }, { key: 'k', label: 'K' }, { key: 'ot', label: 'D' }, { key: 'dggg', label: 'D-GGG' },
+                        ...dynamicOtherCols
                     ];
                     const stats = targetP.map(p => {
                         let s = { w: 0, gp: 0, gu: 0, ht: 0, yi: 0, mi: 0, gi: 0, ygi: 0, fmi: 0, yfmi: 0, rt: 0, r: 0, h: 0, k: 0, ot: 0, dggg: 0 };
+                        dynamicOtherCols.forEach(col => s[col.key] = 0);
                         days.forEach(d => {
                             const dStr = normalizeDate(d), r = freshRecs.find(x => x.personId === p.id && x.date === dStr), isWe = d.getDay() === 0 || d.getDay() === 6;
                             if (!((p.activeUntil && dStr > p.activeUntil) || (p.activeFrom && dStr < p.activeFrom))) {
@@ -1698,8 +1749,15 @@
                                         else if (r.leaveType === LeaveType.OVERTIME) s.fmi++;
                                     } else if (r.status === AttendanceStatus.PUBLIC_HOLIDAY) s.rt++;
                                     else if (r.status === AttendanceStatus.OTHER) {
-                                        if (r.note && r.note.toLocaleUpperCase('tr-TR') === 'GGG') s.dggg++;
-                                        else s.ot++;
+                                        if (r.note) {
+                                            const noteUpper = r.note.toLocaleUpperCase('tr-TR').trim();
+                                            if (noteUpper === 'GGG') s.dggg++;
+                                            else {
+                                                const col = dynamicOtherCols.find(c => c.note === noteUpper);
+                                                if (col) s[col.key]++;
+                                                else s.ot++;
+                                            }
+                                        } else s.ot++;
                                     }
                                 } else { if (isWe) s.ht++; else s.w++; }
                             }
