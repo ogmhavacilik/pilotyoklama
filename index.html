@@ -1656,7 +1656,7 @@
                     targetP.forEach(p => {
                         days.forEach(d => {
                             const dStr = normalizeDate(d), r = freshRecs.find(x => x.personId === p.id && x.date === dStr);
-                            const absenceStates = [AttendanceStatus.LEAVE, AttendanceStatus.SICK, AttendanceStatus.HOSPITAL, AttendanceStatus.PUBLIC_HOLIDAY, AttendanceStatus.ABSENT];
+                            const absenceStates = [AttendanceStatus.LEAVE, AttendanceStatus.SICK, AttendanceStatus.HOSPITAL, AttendanceStatus.PUBLIC_HOLIDAY, AttendanceStatus.ABSENT, AttendanceStatus.DUTY, AttendanceStatus.COURSE];
                             if (r && absenceStates.includes(r.status)) {
                                 uniqueAbsentIds.add(p.id);
                                 const pRecs = freshRecs.filter(x => x.personId === p.id).sort((a,b) => a.date.localeCompare(b.date));
@@ -1667,7 +1667,8 @@
                                 if (!addedPeriods.has(key)) {
                                     addedPeriods.add(key); let totalG = 0; let hasR = false;
                                     for(let k = sI; k <= eI; k++) { totalG += (pRecs[k].leaveType === LeaveType.HALF_DAY || pRecs[k].leaveType === LeaveType.HALF_OVERTIME ? 0.5 : 1); if(pRecs[k].status === AttendanceStatus.SICK || pRecs[k].status === AttendanceStatus.HOSPITAL) hasR = true; }
-                                    let turL = r.status === AttendanceStatus.LEAVE ? r.leaveType : r.status; if(hasR) turL = pRecs.slice(sI, eI+1).find(x => x.status === AttendanceStatus.SICK || x.status === AttendanceStatus.HOSPITAL).status === AttendanceStatus.SICK ? 'RAPOR' : 'HASTANE';
+                                    let turL = r.status === AttendanceStatus.LEAVE ? r.leaveType : (r.status === AttendanceStatus.DUTY ? 'GÖREV' : (r.status === AttendanceStatus.COURSE ? 'KURS' : r.status)); 
+                                    if(hasR) turL = pRecs.slice(sI, eI+1).find(x => x.status === AttendanceStatus.SICK || x.status === AttendanceStatus.HOSPITAL).status === AttendanceStatus.SICK ? 'RAPOR' : 'HASTANE';
                                     beyanList.push({ ad: p.fullName, birim: fUK(p), tur: turL, start: rStart, end: rEnd, gun: totalG });
                                 }
                             }
@@ -1677,10 +1678,10 @@
                     const allPossibleCols = [
                         { key: 'w', label: 'X' }, { key: 'ht', label: 'HT' }, 
                         { key: 'gp', label: 'PLANLI' }, { key: 'gu', label: 'PLANSIZ' },
-                        { key: 'yi', label: 'Yİ' }, { key: 'mi', label: 'Mİ' }, { key: 'gi', label: 'Gİ' }, { key: 'ygi', label: 'YGİ' }, { key: 'fmi', label: 'FMİ' }, { key: 'yfmi', label: 'YFMİ' }, { key: 'rt', label: 'İİ' }, { key: 'r', label: 'R' }, { key: 'h', label: 'H' }, { key: 'k', label: 'K' }, { key: 'ot', label: 'D' }
+                        { key: 'yi', label: 'Yİ' }, { key: 'mi', label: 'Mİ' }, { key: 'gi', label: 'Gİ' }, { key: 'ygi', label: 'YGİ' }, { key: 'fmi', label: 'FMİ' }, { key: 'yfmi', label: 'YFMİ' }, { key: 'rt', label: 'İİ' }, { key: 'r', label: 'R' }, { key: 'h', label: 'H' }, { key: 'k', label: 'K' }, { key: 'ot', label: 'D' }, { key: 'dggg', label: 'D-GGG' }
                     ];
                     const stats = targetP.map(p => {
-                        let s = { w: 0, gp: 0, gu: 0, ht: 0, yi: 0, mi: 0, gi: 0, ygi: 0, fmi: 0, yfmi: 0, rt: 0, r: 0, h: 0, k: 0, ot: 0 };
+                        let s = { w: 0, gp: 0, gu: 0, ht: 0, yi: 0, mi: 0, gi: 0, ygi: 0, fmi: 0, yfmi: 0, rt: 0, r: 0, h: 0, k: 0, ot: 0, dggg: 0 };
                         days.forEach(d => {
                             const dStr = normalizeDate(d), r = freshRecs.find(x => x.personId === p.id && x.date === dStr), isWe = d.getDay() === 0 || d.getDay() === 6;
                             if (!((p.activeUntil && dStr > p.activeUntil) || (p.activeFrom && dStr < p.activeFrom))) {
@@ -1696,7 +1697,10 @@
                                         else if (r.leaveType === LeaveType.HALF_OVERTIME) { s.yfmi += 0.5; s.w += 0.5; }
                                         else if (r.leaveType === LeaveType.OVERTIME) s.fmi++;
                                     } else if (r.status === AttendanceStatus.PUBLIC_HOLIDAY) s.rt++;
-                                    else if (r.status === AttendanceStatus.OTHER) s.ot++;
+                                    else if (r.status === AttendanceStatus.OTHER) {
+                                        if (r.note && r.note.toLocaleUpperCase('tr-TR') === 'GGG') s.dggg++;
+                                        else s.ot++;
+                                    }
                                 } else { if (isWe) s.ht++; else s.w++; }
                             }
                         });
@@ -1714,10 +1718,13 @@
                     html += '<table border="1" style="border-collapse: collapse; font-family: Calibri;">';
                     html += `<tr><td colspan="3" ${hStyle}>${days[0].toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).toLocaleUpperCase('tr-TR')}</td>`;
                     days.forEach(d => html += `<td ${hStyle}>${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}</td>`);
-                    activeCols.forEach(c => html += `<td ${hStyle}>${c.label}</td>`); html += `<td ${hStyle}>TOPLAM</td></tr>`;
+                    if (activeCols.length > 0) {
+                        html += `<td colspan="${activeCols.length}" ${hStyle}>SAYDIRMALAR</td>`;
+                    }
+                    html += `<td ${hStyle}>TOPLAM</td></tr>`;
                     html += `<tr><td ${hStyle}>SIRA</td><td colspan="2" ${hStyle}>AD SOYADI</td>`;
                     days.forEach(d => html += `<td ${hStyle}>${d.toLocaleDateString('tr-TR', { weekday: 'long' }).toLocaleUpperCase('tr-TR')}</td>`);
-                    activeCols.forEach(() => html += `<td ${hStyle}></td>`); html += `<td ${hStyle}></td></tr>`;
+                    activeCols.forEach(c => html += `<td ${hStyle}>${c.label}</td>`); html += `<td ${hStyle}></td></tr>`;
                     let lastUnit = null;
                     targetP.forEach((p, i) => {
                         const pUnitRaw = fUK(p);
@@ -1729,33 +1736,31 @@
                         const s = stats.find(st => st.id === p.id).s;
                         html += `<tr><td ${seqStyle}>${Math.floor(i + 1)}</td><td colspan="2" ${nStyle}>${p.fullName}</td>`;
                         days.forEach(d => {
-                         days.forEach(d => {
-    const dStr = normalizeDate(d); // <-- BURASI OLMALI
-    const r = freshRecs.find(x => x.personId === p.id && x.date === dStr);
-    const isWe = d.getDay() === 0 || d.getDay() === 6;
+                            const dStr = normalizeDate(d);
+                            const r = freshRecs.find(x => x.personId === p.id && x.date === dStr);
+                            const isWe = d.getDay() === 0 || d.getDay() === 6;
 
-    let ct = isWe ? 'HT' : 'X';
+                            let ct = isWe ? 'HT' : 'X';
 
-    if (p.activeUntil && dStr > p.activeUntil) ct = 'İ.K';
-    else if (p.activeFrom && dStr < p.activeFrom) ct = 'P.YOK';
-    else if (r && r.status !== AttendanceStatus.PRESENT) {
-        if (r.status === AttendanceStatus.DUTY || r.status === AttendanceStatus.COURSE) {
-            ct = (r.dutyLocation || (r.status === AttendanceStatus.COURSE ? 'KURS' : 'GÖREV'))
-                .toLocaleUpperCase('tr-TR');
-        }
-        else if (r.status === AttendanceStatus.OTHER) {
-            ct = r.note ? r.note.toLocaleUpperCase('tr-TR') : '';
-        }
-        else {
-            ct = r.status === AttendanceStatus.LEAVE ? r.leaveType
-               : (r.status === AttendanceStatus.SICK ? 'R'
-               : (r.status === AttendanceStatus.HOSPITAL ? 'H'
-               : (r.status === AttendanceStatus.PUBLIC_HOLIDAY ? 'İ.İ.' : r.status)));
-        }
-    }
+                            if (p.activeUntil && dStr > p.activeUntil) ct = 'İ.K';
+                            else if (p.activeFrom && dStr < p.activeFrom) ct = 'P.YOK';
+                            else if (r && r.status !== AttendanceStatus.PRESENT) {
+                                if (r.status === AttendanceStatus.DUTY || r.status === AttendanceStatus.COURSE) {
+                                    ct = (r.dutyLocation || (r.status === AttendanceStatus.COURSE ? 'KURS' : 'GÖREV'))
+                                        .toLocaleUpperCase('tr-TR');
+                                }
+                                else if (r.status === AttendanceStatus.OTHER) {
+                                    ct = r.note ? r.note.toLocaleUpperCase('tr-TR') : '';
+                                }
+                                else {
+                                    ct = r.status === AttendanceStatus.LEAVE ? r.leaveType
+                                    : (r.status === AttendanceStatus.SICK ? 'R'
+                                    : (r.status === AttendanceStatus.HOSPITAL ? 'H'
+                                    : (r.status === AttendanceStatus.PUBLIC_HOLIDAY ? 'İ.İ.' : r.status)));
+                                }
+                            }
 
-    html += `<td ${r && ![AttendanceStatus.PRESENT, AttendanceStatus.DUTY].includes(r.status) ? rbStyle : cStyle}>${(ct === 'MEVCUT' || ct === 'Mevcut') ? '' : ct}</td>`;
-});
+                            html += `<td ${r && ![AttendanceStatus.PRESENT, AttendanceStatus.DUTY].includes(r.status) ? rbStyle : cStyle}>${(ct === 'MEVCUT' || ct === 'Mevcut') ? '' : ct}</td>`;
                         });
                         activeCols.forEach(col => html += `<td ${numStyle}>${fmt(s[col.key])}</td>`);
                         let totalActive = 0; days.forEach(d => { if (!(p.activeUntil && normalizeDate(d) > p.activeUntil) && !(p.activeFrom && normalizeDate(d) < p.activeFrom)) totalActive++; });
@@ -2129,6 +2134,5 @@
     </script>
 </body>
 </html>
-
 
 
