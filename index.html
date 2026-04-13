@@ -140,7 +140,7 @@
             UNPLANNED: 'Plansız'
         };
 
-        const YONETIM_NAMES = ["MEHMET SEFA YÜCEDAĞ", "TEZCAN GÜZER", "MURAT AKMEŞE"];
+        const YONETIM_NAMES = ["MEHMET SEFA YÜCEDAĞ", "TEZCAN GÜZER", "CENGİZ ÖZDEMİR"];
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUoqZkrKZvJ98w5JPtMI2Lfuji-pH6oPX7_Ss_DoN7n7WozCgl3vitjwRqqCIFCl2l/exec"; 
 
@@ -261,7 +261,10 @@
             const rawTitle = (title || role || '').toString();
             const t = rawTitle.toLocaleUpperCase('tr-TR');
             
-            // 1. Uçuş Teknisyeni Logic (Specific Aircraft Technicians)
+            // 1. Pilot Logic
+            if (t.includes('PİLOT')) return 'Pilot';
+
+            // 2. Uçuş Teknisyeni Logic (Specific Aircraft Technicians)
             if (t.includes('AT-802') || 
                 t.includes('T-70') || 
                 t.includes('BELL-429') || 
@@ -501,16 +504,16 @@
                 if (!aircraftModel) return CITIES;
                 
                 if (aircraftModel === AircraftModel.T_70) {
-                    return ['Muğla/Güvercinlik', 'Muğla/Yanıklar', 'DİĞER'];
+                    return ['Muğla/Güvercinlik', 'Muğla/Yanıklar', 'YURT DIŞI', 'DİĞER'];
                 }
                 if (aircraftModel === AircraftModel.AT_802) {
-                    return ['Çanakkale', 'Milas', 'Balıkesir/ Edremit', 'İzmir /Efes', 'Bursa', 'Antalya', 'DİĞER'];
+                    return ['Çanakkale', 'Milas', 'Balıkesir/ Edremit', 'İzmir /Efes', 'Bursa', 'Antalya', 'YURT DIŞI', 'DİĞER'];
                 }
                 if (aircraftModel === AircraftModel.BELL_429) {
-                    return ['Çanakkale', 'İzmir', 'Muğla', 'Antalya', 'Ankara', 'DİĞER'];
+                    return ['Çanakkale', 'İzmir', 'Muğla', 'Antalya', 'Ankara', 'YURT DIŞI', 'DİĞER'];
                 }
                 if (aircraftModel === AircraftModel.B_360 || aircraftModel === AircraftModel.C_650) {
-                    return [...CITIES.filter(c => c !== 'YURT DIŞI'), 'DİĞER'];
+                    return [...CITIES.filter(c => c !== 'YURT DIŞI'), 'YURT DIŞI', 'DİĞER'];
                 }
                 return CITIES;
             };
@@ -608,7 +611,7 @@
                                 ) : (
                                     <select
                                         className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500"
-                                        value={(!state?.dutyLocation) ? "" : ((state.dutyLocation === 'DİĞER' || locations.includes(state.dutyLocation)) ? state.dutyLocation : 'DİĞER')}
+                                        value={(!state?.dutyLocation) ? "" : ((state.dutyLocation === 'DİĞER' || state.dutyLocation === 'YURT DIŞI' || locations.includes(state.dutyLocation)) ? state.dutyLocation : 'DİĞER')}
                                         onChange={(e) => {
                                             const val = e.target.value;
                                             onChangeDetail(personId, 'dutyLocation', val);
@@ -619,8 +622,8 @@
                                     </select>
                                 )}
                             </div>
-                            {state?.dutyType !== DutyType.UNPLANNED && (state?.dutyLocation === 'DİĞER' || (state?.dutyLocation && !locations.includes(state.dutyLocation))) && (
-                                <input type="text" placeholder="Yer giriniz" className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500" value={state.dutyLocation === 'DİĞER' ? '' : state.dutyLocation} onChange={(e) => onChangeDetail(personId, 'dutyLocation', e.target.value)} />
+                            {state?.dutyType !== DutyType.UNPLANNED && (state?.dutyLocation === 'DİĞER' || state?.dutyLocation === 'YURT DIŞI' || (state?.dutyLocation && !locations.includes(state.dutyLocation))) && (
+                                <input type="text" placeholder="Yer giriniz" className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500" value={(state.dutyLocation === 'DİĞER' || state.dutyLocation === 'YURT DIŞI') ? '' : state.dutyLocation} onChange={(e) => onChangeDetail(personId, 'dutyLocation', e.target.value)} />
                             )}
                         </div>
                     )}
@@ -1259,12 +1262,12 @@
                     });
 
                     // Signature Block (Rank 1 - Murat Akmeşe Logic)
-                    const rank1Person = plList.find(p => p.rank === 1) || { fullName: 'Murat AKMEŞE', title: 'Kaptan Pilot' };
+                    const rank1Person = plList.find(p => p.rank === 1) || { fullName: 'Cengiz ÖZDEMİR', title: 'Kaptan Pilot' };
                     
                     // Merge and center F, G columns, rows 8, 9, 10, 11
                     worksheet.mergeCells('F8:G11');
                     const sigCell = worksheet.getCell('F8');
-                    sigCell.value = `${rank1Person.fullName}\nKaptan Pilot\nHava Araçları Bakım ve Teknik Şube Müdürü`;
+                    sigCell.value = `${rank1Person.fullName}\nKaptan Pilot\nUçuş ve Eğitim Şube Müdürü`;
                     sigCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                     sigCell.font = { bold: true };
 
