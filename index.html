@@ -140,7 +140,7 @@
             UNPLANNED: 'Plansız'
         };
 
-        const YONETIM_NAMES = ["MEHMET SEFA YÜCEDAĞ", "TEZCAN GÜZER", "CENGİZ ÖZDEMİR"];
+        const YONETIM_NAMES = ["MEHMET SEFA YÜCEDAĞ", "TEZCAN GÜZER"];
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUoqZkrKZvJ98w5JPtMI2Lfuji-pH6oPX7_Ss_DoN7n7WozCgl3vitjwRqqCIFCl2l/exec"; 
 
@@ -261,10 +261,7 @@
             const rawTitle = (title || role || '').toString();
             const t = rawTitle.toLocaleUpperCase('tr-TR');
             
-            // 1. Pilot Logic
-            if (t.includes('PİLOT')) return 'Pilot';
-
-            // 2. Uçuş Teknisyeni Logic (Specific Aircraft Technicians)
+            // 1. Uçuş Teknisyeni Logic (Specific Aircraft Technicians)
             if (t.includes('AT-802') || 
                 t.includes('T-70') || 
                 t.includes('BELL-429') || 
@@ -1242,11 +1239,16 @@
                                 diffDays = countDays;
                             }
 
+                            let displayTitle = getDisplayTitle(p.title, p.role);
+                            if (displayTitle.toLocaleUpperCase('tr-TR').includes('PİLOT')) {
+                                displayTitle = 'Pilot';
+                            }
+
                             const rowData = [
                                 idx + 1,
                                 p.fullName,
                                 p.tcNo || '',
-                                getDisplayTitle(p.title, p.role),
+                                displayTitle,
                                 selectedHarcirahCity,
                                 hStart.toLocaleDateString('tr-TR'),
                                 hEnd.toLocaleDateString('tr-TR'),
