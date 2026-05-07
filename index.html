@@ -494,8 +494,16 @@
         };
 
         // AttendanceControl Component
-        const AttendanceControl = ({ personId, state, isWeeklyMode, aircraftModel, onChangeStatus, onChangeDetail }) => {
+        const AttendanceControl = ({ personId, state, isWeeklyMode, isWeekend, aircraftModel, onChangeStatus, onChangeDetail }) => {
             const status = state?.status;
+
+            const handleToggleStatus = (newStatus) => {
+                if (isWeekend && status === newStatus) {
+                    onChangeStatus(personId, AttendanceStatus.PRESENT);
+                } else {
+                    onChangeStatus(personId, newStatus);
+                }
+            };
 
             const getLocations = () => {
                 if (!aircraftModel) return CITIES;
@@ -520,14 +528,14 @@
             return (
                 <div className="flex flex-col xl:flex-row items-start xl:items-center gap-4 w-full">
                     <div className="flex flex-wrap gap-2 w-full xl:w-auto">
-                        <button onClick={() => onChangeStatus(personId, AttendanceStatus.PRESENT)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.PRESENT || !status ? 'bg-green-600 border-green-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
+                        <button onClick={() => handleToggleStatus(AttendanceStatus.PRESENT)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.PRESENT || !status ? 'bg-green-600 border-green-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
                             Mesai
                         </button>
 
-                        <button onClick={() => onChangeStatus(personId, AttendanceStatus.DUTY)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.DUTY ? 'bg-blue-600 border-blue-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
+                        <button onClick={() => handleToggleStatus(AttendanceStatus.DUTY)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.DUTY ? 'bg-blue-600 border-blue-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
                             Görev
                         </button>
-                         <button onClick={() => onChangeStatus(personId, AttendanceStatus.COURSE)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.COURSE ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
+                         <button onClick={() => handleToggleStatus(AttendanceStatus.COURSE)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.COURSE ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
                             Kurs
                         </button>
 
@@ -542,14 +550,14 @@
                                 activeClass = 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500';
                             }
                             return (
-                                <button key={s} onClick={() => onChangeStatus(personId, s)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${activeClass}`}>
+                                <button key={s} onClick={() => handleToggleStatus(s)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${activeClass}`}>
                                     {s}
                                 </button>
                             );
                         })}
 
                         <button
-                            onClick={() => onChangeStatus(personId, AttendanceStatus.PUBLIC_HOLIDAY)}
+                            onClick={() => handleToggleStatus(AttendanceStatus.PUBLIC_HOLIDAY)}
                             className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.PUBLIC_HOLIDAY
                                     ? 'bg-orange-600 border-orange-500 text-white'
                                     : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'
@@ -559,7 +567,7 @@
                         </button>
 
                         <button
-                            onClick={() => onChangeStatus(personId, AttendanceStatus.OTHER)}
+                            onClick={() => handleToggleStatus(AttendanceStatus.OTHER)}
                             className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.OTHER
                                     ? 'bg-purple-600 border-purple-500 text-white'
                                     : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'
@@ -568,7 +576,7 @@
                             Diğer
                         </button>
 
-                         <button onClick={() => onChangeStatus(personId, AttendanceStatus.ABSENT)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.ABSENT ? 'bg-red-600 border-red-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
+                         <button onClick={() => handleToggleStatus(AttendanceStatus.ABSENT)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.ABSENT ? 'bg-red-600 border-red-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
                             Yok
                         </button>
                     </div>
@@ -2100,6 +2108,212 @@
             return dates;
         };
 
+        const ReportDialog = ({ type, onClose, personnel, attendance }) => {
+            const today = getTodayString();
+
+            const getPersonUnit = (p) => {
+                if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
+                if (p.unit) return p.unit;
+                const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
+                if (titleUpper.includes('BELL')) return "BELL-429";
+                if (titleUpper.includes('C-650')) return "C-650";
+                if (titleUpper.includes('B-360')) return "B-360";
+                if (titleUpper.includes('T-70')) return "T-70";
+                if (titleUpper.includes('AT-802')) return "AT-802";
+                if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK') || titleUpper.includes('MÜHENDİS')) return "TEKNİK EKİP";
+                if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('ŞÖFÖR')) return "YER DESTEK";
+                return "İDARİ BİRİM";
+            };
+            
+            const Header = () => (
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-forest-500 pb-4 gap-4">
+                    <div className="flex items-center gap-3">
+                       <div className="bg-orange-600 p-2 rounded-lg shadow-inner shrink-0 md:p-3"><LucideIcons.Plane className="text-white" size={24} /></div>
+                       <div>
+                            <h2 className="text-xl md:text-3xl font-extrabold text-white tracking-tight">
+                                {type === 'MESAI' && 'MESAİ DURUMU (GÜNLÜK)'}
+                                {type === 'FMİ' && 'FAZLA MESAİ İZNİ (GÜNLÜK)'}
+                                {type === 'GÖREV' && 'GÖREV DURUMU (GÜNLÜK)'}
+                            </h2>
+                            <p className="text-forest-400 text-xs md:text-sm font-medium">{new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' })}</p>
+                       </div>
+                    </div>
+                    <button onClick={onClose} className="absolute top-4 right-4 md:relative md:top-0 md:right-0 bg-white/10 hover:bg-red-600 text-white p-2 md:p-3 rounded-full transition-all duration-300 group shadow-lg">
+                        <LucideIcons.X size={24} className="group-hover:rotate-90 transition-transform" />
+                    </button>
+                </div>
+            );
+
+            const PersonItem = ({ p }) => (
+                <div className="flex items-center gap-3 p-2 bg-forest-950/60 rounded-xl border border-forest-700/50 hover:border-orange-500/50 hover:bg-forest-800/60 transition-all duration-300 group shadow-md hover:shadow-orange-500/10 mb-1">
+                    <div className="hidden md:block w-12 h-12 rounded-lg border-2 border-forest-700 overflow-hidden bg-forest-900 flex-shrink-0 group-hover:border-orange-500/50 transition-colors">
+                        <SafeImage src={p.photoUrl} personId={p.id} className="personnel-photo-square" />
+                    </div>
+                    <div className="overflow-hidden">
+                        <div className="text-sm md:text-lg font-bold text-white group-hover:text-orange-400 transition-colors truncate">{p.fullName}</div>
+                        <div className="text-[10px] md:text-xs text-forest-400 font-semibold uppercase tracking-wider truncate">{getDisplayTitle(p.title, p.role)}</div>
+                    </div>
+                </div>
+            );
+
+            const GroupedPersonList = ({ list, title, colorClass, icon: Icon }) => {
+                const grouped = list.reduce((acc, p) => {
+                    const unit = getPersonUnit(p);
+                    if (!acc[unit]) acc[unit] = [];
+                    acc[unit].push(p);
+                    return acc;
+                }, {});
+
+                const units = Object.keys(grouped).sort();
+
+                return (
+                    <div className="mb-8">
+                        <h3 className={`text-xl md:text-2xl font-black ${colorClass} mb-4 flex items-center gap-3 p-3 md:p-4 rounded-lg border-l-4 shadow-lg ${colorClass.includes('green') ? 'bg-green-950/30 border-green-50' : colorClass.includes('blue') ? 'bg-blue-950/30 border-blue-50' : 'bg-yellow-950/30 border-yellow-500'}`}>
+                            <Icon size={24} /> {title} ({list.length})
+                        </h3>
+                        {units.length === 0 ? (
+                            <p className="text-forest-500 italic p-4">Personel bulunamadı.</p>
+                        ) : (
+                            <div className="space-y-6">
+                                {units.map(unit => (
+                                    <div key={unit} className="bg-forest-900/10 p-3 rounded-lg border border-forest-800/30">
+                                        <div className="flex items-center gap-2 mb-3 border-b border-forest-700/50 pb-2">
+                                            <div className="w-1.5 h-4 bg-orange-500 rounded-full"></div>
+                                            <span className="text-sm font-black text-forest-100 uppercase tracking-widest">{unit}</span>
+                                            <span className="ml-auto bg-forest-800 text-forest-400 text-[10px] px-2 py-0.5 rounded-full">{grouped[unit].length}</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                                            {grouped[unit].map(p => <PersonItem key={p.id} p={p} />)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            if (type === 'MESAI') {
+                const mesaiList = personnel.filter(p => {
+                    const pStart = p.activeFrom || '2000-01-01';
+                    const pEnd = p.activeUntil || '2099-12-31';
+                    const isActiveToday = pStart <= today && pEnd >= today;
+                    if (!isActiveToday) return false;
+
+                    const r = attendance.find(a => a.personId === p.id && a.date === today);
+                    return (r?.status === AttendanceStatus.PRESENT) || (!r); 
+                }).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+
+                const beklemeList = personnel.filter(p => {
+                    const pStart = p.activeFrom || '2000-01-01';
+                    const pEnd = p.activeUntil || '2099-12-31';
+                    const isActiveToday = pStart <= today && pEnd >= today;
+                    if (!isActiveToday) return false;
+
+                    const r = attendance.find(a => a.personId === p.id && a.date === today);
+                    return r?.status === AttendanceStatus.OTHER && r?.note?.toLocaleUpperCase('tr-TR').includes('BEKLEME');
+                }).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+
+                const filteredMesai = mesaiList.filter(p => !beklemeList.find(b => b.id === p.id));
+
+                return (
+                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-3 md:p-12 animate-fade-in backdrop-blur-xl">
+                        <div className="max-w-7xl mx-auto">
+                            <Header />
+                            <div className="space-y-6">
+                                <GroupedPersonList list={filteredMesai} title="MESAİDE OLANLAR" colorClass="text-green-400" icon={LucideIcons.CheckCircle} />
+                                <GroupedPersonList list={beklemeList} title="BEKLEME YAZILANLAR" colorClass="text-blue-400" icon={LucideIcons.Activity} />
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (type === 'GÖREV') {
+                const dutyRecs = attendance.filter(a => a.date === today && a.status === AttendanceStatus.DUTY);
+                const activeDutyPersonnel = personnel.filter(p => {
+                    const pStart = p.activeFrom || '2000-01-01';
+                    const pEnd = p.activeUntil || '2099-12-31';
+                    return pStart <= today && pEnd >= today;
+                });
+                const dutyPersonnelIds = new Set(dutyRecs.map(r => r.personId));
+                const finalDutyPersonnel = activeDutyPersonnel.filter(p => dutyPersonnelIds.has(p.id));
+                const locations = [...new Set(dutyRecs.filter(r => activeDutyPersonnel.some(p => p.id === r.personId)).map(r => (r.dutyLocation || 'BELİRSİZ').toLocaleUpperCase('tr-TR')))].sort();
+
+                return (
+                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-3 md:p-12 animate-fade-in backdrop-blur-xl">
+                        <div className="max-w-7xl mx-auto">
+                            <Header />
+                            {locations.length === 0 ? (
+                                <div className="text-center py-10 bg-forest-900/20 rounded-3xl border border-dashed border-forest-700">
+                                    <LucideIcons.Search size={48} className="mx-auto text-forest-600 mb-4" />
+                                    <p className="text-forest-400 text-lg">Bugün görevde olan personel bulunamadı.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-10">
+                                    {locations.map(loc => {
+                                        const peopleInLoc = finalDutyPersonnel.filter(p => dutyRecs.some(r => r.personId === p.id && (r.dutyLocation || 'BELİRSİZ').toLocaleUpperCase('tr-TR') === loc))
+                                            .sort((a, b) => (a.rank || 999) - (b.rank || 999));
+                                        
+                                        const grouped = peopleInLoc.reduce((acc, p) => {
+                                            const unit = getPersonUnit(p);
+                                            if (!acc[unit]) acc[unit] = [];
+                                            acc[unit].push(p);
+                                            return acc;
+                                        }, {});
+                                        const units = Object.keys(grouped).sort();
+
+                                        return (
+                                            <div key={loc} className="bg-forest-900/20 p-4 md:p-6 rounded-2xl border border-forest-800/50 shadow-xl self-start">
+                                                <h3 className="text-lg md:text-xl font-black text-orange-400 mb-4 flex items-center gap-3 border-b border-orange-500/30 pb-2 uppercase tracking-tighter">
+                                                    <LucideIcons.MapPin size={20} /> {loc} <span className="ml-auto bg-orange-600/20 text-orange-400 text-xs px-2 py-0.5 rounded-full">{peopleInLoc.length}</span>
+                                                </h3>
+                                                <div className="space-y-6">
+                                                   {units.map(unit => (
+                                                       <div key={unit}>
+                                                           <div className="text-[10px] font-black text-forest-500 uppercase tracking-[0.2em] mb-2 px-1 border-l-2 border-forest-700">{unit}</div>
+                                                           <div className="space-y-1">
+                                                               {grouped[unit].map(p => <PersonItem key={p.id} p={p} />)}
+                                                           </div>
+                                                       </div>
+                                                   ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            if (type === 'FMİ') {
+                const fmiPeople = personnel.filter(p => {
+                    const pStart = p.activeFrom || '2000-01-01';
+                    const pEnd = p.activeUntil || '2099-12-31';
+                    const isActiveToday = pStart <= today && pEnd >= today;
+                    if (!isActiveToday) return false;
+
+                    const r = attendance.find(a => a.personId === p.id && a.date === today);
+                    return r?.status === AttendanceStatus.LEAVE && r?.leaveType === LeaveType.OVERTIME;
+                }).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+
+                return (
+                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-3 md:p-12 animate-fade-in backdrop-blur-xl">
+                        <div className="max-w-7xl mx-auto">
+                            <Header />
+                            <div className="max-w-4xl mx-auto">
+                                <GroupedPersonList list={fmiPeople} title="FAZLA MESAİ İZNİ (F.M.İ)" colorClass="text-yellow-400" icon={LucideIcons.CalendarDays} />
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
+        };
+
         const AttendanceView = ({ initialModel = null, initialStartDate = getTodayString(), initialEndDate = getTodayString(), initialSearchName = null, onSave: onSaveExternal }) => {
             const [selModel, setSelModel] = useState(initialModel);
             const [searchName, setSearchName] = useState(initialSearchName);
@@ -2134,6 +2348,7 @@
             const [isReportReady, setIsReportReady] = useState(false);
             const [reportUnit, setReportUnit] = useState('TÜM BİRİMLER');
             const [reportSearch, setReportSearch] = useState('');
+            const [reportModalType, setReportModalType] = useState(null);
 
             const showAttendanceFromReport = () => {
                 if (reportUnit === 'TÜM BİRİMLER') {
@@ -3120,6 +3335,12 @@
             const renderPersonRow = (p, i) => {
                 const s = att[p.id] || { status: AttendanceStatus.PRESENT };
                 const isWeeklyMode = rangeStartDate !== rangeEndDate;
+                const isWeekend = (() => {
+                    if (isWeeklyMode) return false;
+                    const d = new Date(rangeStartDate + 'T12:00:00');
+                    return d.getDay() === 0 || d.getDay() === 6;
+                })();
+
                 let shouldBlur = false;
                 if (isWeeklyMode) {
                     const dInR = getDaysInRange(rangeStartDate, rangeEndDate);
@@ -3158,7 +3379,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <AttendanceControl personId={p.id} state={s} isWeeklyMode={isWeeklyMode} aircraftModel={selModel} onChangeStatus={handleStatusChangeWithAuth} onChangeDetail={handleDetailChangeWithAuth} />
+                            <AttendanceControl personId={p.id} state={s} isWeeklyMode={isWeeklyMode} isWeekend={isWeekend} aircraftModel={selModel} onChangeStatus={handleStatusChangeWithAuth} onChangeDetail={handleDetailChangeWithAuth} />
                         </div>
                         {shouldBlur && <div className="absolute inset-0 flex items-center justify-center"><Button onClick={() => openDetailModalWithAuth(p)}><Edit2 size={16} className="mr-2" /> Ayrıntıyı Gör ve Düzenle</Button></div>}
                     </div>
@@ -3192,6 +3413,31 @@
                             )})}
                         </div>
                     </Card>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <button 
+                            onClick={() => setReportModalType('MESAI')} 
+                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
+                        >
+                            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            <span className="text-xl relative z-10 tracking-tight">MESAİ (GÜNLÜK)</span>
+                        </button>
+                        <button 
+                            onClick={() => setReportModalType('FMİ')} 
+                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
+                        >
+                            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            <span className="text-xl relative z-10 tracking-tight">FAZLA MESAİ (GÜNLÜK)</span>
+                        </button>
+                        <button 
+                            onClick={() => setReportModalType('GÖREV')} 
+                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
+                        >
+                            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            <span className="text-xl relative z-10 tracking-tight">GÖREV (GÜNLÜK)</span>
+                        </button>
+                    </div>
+
                     <Card title="Raporlar ve Çıktılar">
                         <div className="flex flex-col gap-6">
                             <div className="bg-forest-900/80 p-6 rounded-lg border border-forest-600 shadow-md">
@@ -3217,6 +3463,15 @@
                             </div>
                         </div>
                     </Card>
+                    
+                    {reportModalType && (
+                        <ReportDialog 
+                            type={reportModalType} 
+                            onClose={() => setReportModalType(null)} 
+                            personnel={allPersonnel} 
+                            attendance={allRecs} 
+                        />
+                    )}
                 </div>
             );
 
