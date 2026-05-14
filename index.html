@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>UÇUŞ VE EĞİTİM ŞUBE YOKLAMA</title>
+    <title>UÇUŞ İŞLETME VE EĞİTİM ŞUBE YOKLAMA</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -142,7 +142,7 @@
 
         const YONETIM_NAMES = ["MEHMET SEFA YÜCEDAĞ", "TEZCAN GÜZER"];
 
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUoqZkrKZvJ98w5JPtMI2Lfuji-pH6oPX7_Ss_DoN7n7WozCgl3vitjwRqqCIFCl2l/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5jJmZ6sU8qpSwCFwp41z_7fJYy-buB4BD5686jAoM3xqVw39m3q3iDbkVbQCDUZ5U/exec"; 
 
         const CITIES = ['Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Amasya', 'Ankara', 'Antalya', 'Artvin', 'Aydın', 'Balıkesir', 'Bilecik', 'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum', 'Denizli', 'Diyarbakır', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir', 'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari', 'Hatay', 'Isparta', 'Mersin', 'İstanbul', 'İzmir', 'Kars', 'Kastamonu', 'Kayseri', 'Kırklareli', 'Kırşehir', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya', 'Manisa', 'Kahramanmaraş', 'Mardin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde', 'Ordu', 'Rize', 'Sakarya', 'Samsun', 'Siirt', 'Siirt', 'Siirt', 'Sinop', 'Sivas', 'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Şanlıurfa', 'Uşak', 'Van', 'Yozgat', 'Zonguldak', 'Aksaray', 'Bayburt', 'Karaman', 'Kırıkkale', 'Batman', 'Şırnak', 'Bartın', 'Ardahan', 'Iğdır', 'Yalova', 'Karabük', 'Kilis', 'Osmaniye', 'Düzce', 'YURT DIŞI'];
 
@@ -1237,15 +1237,9 @@
                             const countDays = selectedDatesForPerson.length;
                             let hStart, hEnd, diffDays;
                             
-                            if (countDays >= 7) {
-                                hStart = new Date(d1); hStart.setDate(hStart.getDate() + 1);
-                                hEnd = new Date(d2);
-                                diffDays = countDays - 1;
-                            } else {
-                                hStart = new Date(d1);
-                                hEnd = new Date(d2);
-                                diffDays = countDays;
-                            }
+                            hStart = new Date(d1);
+                            hEnd = new Date(d2);
+                            diffDays = countDays;
 
                             let displayTitle = getDisplayTitle(p.title, p.role);
                             if (displayTitle.toLocaleUpperCase('tr-TR').includes('PİLOT')) {
@@ -1352,7 +1346,7 @@
 
                 let preparedCount = 0;
                 const offscreenCanvas = document.createElement('canvas');
-                const CANV_SIZE = 200;
+                const CANV_SIZE = 800; // Increased for better quality
                 offscreenCanvas.width = CANV_SIZE;
                 offscreenCanvas.height = CANV_SIZE;
                 const ctx = offscreenCanvas.getContext('2d');
@@ -1360,7 +1354,7 @@
                 for (let i = 0; i < activePersonnel.length; i++) {
                     const p = activePersonnel[i];
                     const rowIndex = i + 2;
-                    worksheet.getRow(rowIndex).height = 120;
+                    worksheet.getRow(rowIndex).height = 160; // Increased row height
                     worksheet.getCell(`A${rowIndex}`).value = i + 1;
                     worksheet.getCell(`B${rowIndex}`).value = p.fullName;
                     worksheet.getCell(`C${rowIndex}`).value = p.tcNo || '';
@@ -1376,12 +1370,13 @@
                         try {
                             const imgB64 = await new Promise((resolve) => {
                                 const img = new Image();
+                                img.crossOrigin = "anonymous"; // Added for safety
                                 img.onload = () => {
                                     ctx.fillStyle = '#ffffff'; 
                                     ctx.fillRect(0, 0, CANV_SIZE, CANV_SIZE);
                                     const s = Math.min(img.width, img.height);
                                     ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, CANV_SIZE, CANV_SIZE);
-                                    resolve(offscreenCanvas.toDataURL('image/jpeg', 0.95));
+                                    resolve(offscreenCanvas.toDataURL('image/jpeg', 1.0)); // Best quality
                                 };
                                 img.onerror = () => resolve(null);
                                 img.src = sourceB64;
@@ -1393,8 +1388,8 @@
                                     extension: 'jpeg',
                                 });
                                 worksheet.addImage(imageId, {
-                                    tl: { col: 4.1, row: i + 1.1 },
-                                    ext: { width: 150, height: 150 }
+                                    tl: { col: 4.05, row: i + 1.05 },
+                                    ext: { width: 154, height: 210 } // Larger dimensions
                                 });
                             }
                         } catch(e) { console.error("Image error", e); }
@@ -2773,7 +2768,21 @@
                         if (personsToSkip.has(p.id)) return; // Skip blurred rows
 
                         const s = att[p.id] || { status: AttendanceStatus.PRESENT };
-                        if (!s?.status) return;
+                        
+                        if (s?.status === undefined) {
+                            // If it's explicitly undefined (weekend reset), check if an existing record needs to be deleted
+                            const hasExisting = allRecs.some(r => r.personId === p.id && r.date === dStr);
+                            if (hasExisting) {
+                                counter++;
+                                recs.push({
+                                    id: `DEL-${timestamp}-${counter}-${p.id}`,
+                                    date: dStr,
+                                    personId: p.id,
+                                    status: '' // Empty status signals deletion to backend
+                                });
+                            }
+                            return;
+                        }
 
                         const dType = s.dutyType || DutyType.PLANNED;
                         
@@ -3062,13 +3071,13 @@
                 
                 Object.keys(detailDays).forEach(dStr => {
                     const s = detailDays[dStr];
-                    if (s.status) {
+                    if (s.status !== undefined) {
                         counter++;
                         recs.push({
                             id: `${timestamp}-${counter}-${detailPerson.id}`,
                             date: dStr,
                             personId: detailPerson.id,
-                            status: s.status,
+                            status: s.status || '', // Empty status if reset
                             dutyLocation: s.dutyLocation,
                             leaveType: s.leaveType,
                             note: s.note,
@@ -3604,7 +3613,7 @@
                 <div className="min-h-screen pb-10">
                     <div id="curtain" className={`fixed top-0 left-0 w-full h-full bg-forest-800 z-[9999] flex flex-col items-center justify-center transition-transform duration-1000 ease-in-out ${curtainOpen ? '-translate-y-full' : 'translate-y-0'} ${curtainHidden ? 'hidden' : ''}`}>
                         <div className="w-96 h-96 rounded-full overflow-hidden border-8 border-forest-400 shadow-[0_0_40px_rgba(0,0,0,0.6)] mb-8"><img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNW9uenhqZXdxbGd6YWNxc2UwempmOXNyaG15NGtuZTJmb3EyaTNqZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/1rrxPs1nb3IjwmbiXw/giphy.gif" className="w-full h-full object-cover" alt="Loading" /></div>
-                        <h1 className="text-5xl md:text-6xl font-bold text-white tracking-wider text-center px-4">UÇUŞ VE EĞİTİM ŞUBE YOKLAMA</h1>
+                        <h1 className="text-5xl md:text-6xl font-bold text-white tracking-wider text-center px-4">UÇUŞ İŞLETME VE EĞİTİM ŞUBE YOKLAMA</h1>
                     </div>
                     {view === 'attendance' && (<div className="relative"><AttendanceView /><div className="fixed top-4 right-4 z-50"><button onClick={() => setView('login')} className="bg-forest-600 hover:bg-forest-500 text-white px-3 py-1.5 text-xs rounded-full border border-forest-500 shadow-md flex items-center gap-1.5 transition-all font-bold tracking-wide"><Settings size={14} /><span>Yönetici Paneli</span></button></div></div>)}
                     {view === 'login' && (<div className="container mx-auto p-4 animate-fade-in"><button onClick={() => setView('attendance')} className="mb-4 text-forest-400 hover:text-white flex items-center gap-2"><ArrowUp className="rotate-[-90deg]" size={16} /> Geri Dön</button><Login onLogin={handleLoginSuccess} /></div>)}
