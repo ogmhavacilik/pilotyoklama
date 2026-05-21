@@ -142,7 +142,7 @@
 
         const YONETIM_NAMES = ["MEHMET SEFA YÜCEDAĞ", "TEZCAN GÜZER"];
 
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5jJmZ6sU8qpSwCFwp41z_7fJYy-buB4BD5686jAoM3xqVw39m3q3iDbkVbQCDUZ5U/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwzE_HPZUCm8Xx4YpSXF1Ys3KmeDlyUnnVCXt9sG3zCBIKsj9hsL7g10Xcvw0tCi3pi/exec"; 
 
         const CITIES = ['Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Amasya', 'Ankara', 'Antalya', 'Artvin', 'Aydın', 'Balıkesir', 'Bilecik', 'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum', 'Denizli', 'Diyarbakır', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir', 'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari', 'Hatay', 'Isparta', 'Mersin', 'İstanbul', 'İzmir', 'Kars', 'Kastamonu', 'Kayseri', 'Kırklareli', 'Kırşehir', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya', 'Manisa', 'Kahramanmaraş', 'Mardin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde', 'Ordu', 'Rize', 'Sakarya', 'Samsun', 'Siirt', 'Siirt', 'Siirt', 'Sinop', 'Sivas', 'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Şanlıurfa', 'Uşak', 'Van', 'Yozgat', 'Zonguldak', 'Aksaray', 'Bayburt', 'Karaman', 'Kırıkkale', 'Batman', 'Şırnak', 'Bartın', 'Ardahan', 'Iğdır', 'Yalova', 'Karabük', 'Kilis', 'Osmaniye', 'Düzce', 'YURT DIŞI'];
 
@@ -1154,6 +1154,7 @@
                         .filter(r => 
                             unitPersonIds.has(r.personId) &&
                             r.status === AttendanceStatus.DUTY && 
+                            r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR') &&
                             r.date >= range.start &&
                             r.date <= range.end
                         )
@@ -1171,6 +1172,7 @@
                             .filter(r => 
                                 r.personId === p.id && 
                                 r.status === AttendanceStatus.DUTY && 
+                                r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR') &&
                                 r.date >= range.start && 
                                 r.date <= range.end
                             )
@@ -1222,9 +1224,10 @@
 
                     const selectedPeople = harcirahPersonnel.filter(p => selectedHarcirahPersonnelIds.has(p.id));
                     
-                    selectedPeople.forEach((p, idx) => {
-                        const rowIndex = idx + 4;
-                        
+                    let currentExcelRow = 4;
+                    let lastDataRowIndex = 3;
+
+                    selectedPeople.forEach((p) => {
                         const selectedDatesForPerson = Array.from(selectedHarcirahDates[p.id] || []).sort();
                         
                         if (selectedDatesForPerson.length > 0) {
@@ -1246,8 +1249,9 @@
                                 displayTitle = 'Pilot';
                             }
 
+                            const rowIndex = currentExcelRow;
                             const rowData = [
-                                idx + 1,
+                                rowIndex - 3,
                                 p.fullName,
                                 p.tcNo || '',
                                 displayTitle,
@@ -1262,16 +1266,22 @@
                                 cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
                                 cell.alignment = { horizontal: 'center' };
                             });
+
+                            lastDataRowIndex = rowIndex;
+                            currentExcelRow++;
                         }
                     });
 
                     // Signature Block (Rank 1 - Murat Akmeşe Logic)
                     const rank1Person = plList.find(p => p.rank === 1) || { fullName: 'Cengiz ÖZDEMİR', title: 'Kaptan Pilot' };
                     
-                    // Merge and center F, G columns, rows 8, 9, 10, 11
-                    worksheet.mergeCells('F8:G11');
-                    const sigCell = worksheet.getCell('F8');
-                    sigCell.value = `${rank1Person.fullName}\nKaptan Pilot\nUçuş ve Eğitim Şube Müdürü`;
+                    // Starts exactly 4 rows below the last data row
+                    const sigStartRow = lastDataRowIndex + 4;
+                    const sigEndRow = sigStartRow + 3;
+                    
+                    worksheet.mergeCells(`F${sigStartRow}:G${sigEndRow}`);
+                    const sigCell = worksheet.getCell(`F${sigStartRow}`);
+                    sigCell.value = `${rank1Person.fullName}\nKaptan Pilot\nUçuş İşletme ve Eğitim Şube Müdürü`;
                     sigCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                     sigCell.font = { bold: true };
 
@@ -2921,7 +2931,9 @@
                         status, 
                         dutyType: status === AttendanceStatus.DUTY ? (prev[pid]?.dutyType || DutyType.PLANNED) : undefined,
                         dutyLocation: (status === AttendanceStatus.DUTY || status === AttendanceStatus.COURSE) ? (prev[pid]?.dutyLocation || '') : undefined,
-                        includeWeekend: status === AttendanceStatus.DUTY ? true : (prev[pid]?.includeWeekend || false)
+                        includeWeekend: status === AttendanceStatus.DUTY ? true : (prev[pid]?.includeWeekend || false),
+                        note: status === AttendanceStatus.OTHER ? prev[pid]?.note : undefined,
+                        leaveType: status === AttendanceStatus.LEAVE ? (prev[pid]?.leaveType || LeaveType.DAILY) : undefined
                     } 
                 }));
             };
@@ -3040,7 +3052,8 @@
                             dutyLocation: (status === AttendanceStatus.DUTY || status === AttendanceStatus.COURSE) ? (prev[dateStr]?.dutyLocation || '') : undefined,
                             dutyType: status === AttendanceStatus.DUTY ? (prev[dateStr]?.dutyType || DutyType.PLANNED) : undefined,
                             leaveType: status === AttendanceStatus.LEAVE ? (prev[dateStr]?.leaveType || LeaveType.DAILY) : undefined,
-                            includeWeekend: status === AttendanceStatus.DUTY ? true : (prev[dateStr]?.includeWeekend || false)
+                            includeWeekend: status === AttendanceStatus.DUTY ? true : (prev[dateStr]?.includeWeekend || false),
+                            note: status === AttendanceStatus.OTHER ? prev[dateStr]?.note : undefined
                         }
                     };
 
