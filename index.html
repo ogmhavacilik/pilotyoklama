@@ -299,6 +299,43 @@
             return '';
         };
 
+        const normalizeStatus = (s) => {
+            if (!s || typeof s !== 'string') return s;
+            const cleaned = s.trim();
+            const lower = cleaned.toLowerCase();
+            const upper = cleaned.toUpperCase();
+            
+            // Standardizing 'İzinli' to AttendanceStatus.LEAVE ('İzin')
+            if (cleaned === 'İzinli' || lower === 'izinli' || upper === 'İZİNLİ') {
+                return AttendanceStatus.LEAVE;
+            }
+
+            // Standardizing PRESENT variations
+            const isPresent = (
+                cleaned === 'X' || 
+                cleaned === 'x' || 
+                lower === 'x' || 
+                lower === 'mesai' || 
+                lower === 'mesaide' || 
+                lower === 'mevcut' || 
+                upper === 'MESAİ' || 
+                upper === 'MESAİDE' || 
+                upper === 'MEVCUT' ||
+                cleaned === 'Mevcut' ||
+                cleaned === 'mevcut' ||
+                cleaned === 'MEVCUT' ||
+                cleaned === 'MESAİ' ||
+                cleaned === 'Mesaide' ||
+                cleaned === 'mesaide'
+            );
+            
+            if (isPresent) {
+                return AttendanceStatus.PRESENT;
+            }
+            
+            return cleaned;
+        };
+
         const getDisplayTitle = (title, role) => {
             if (!title && !role) return '';
             const rawTitle = (title || role || '').toString();
@@ -328,8 +365,14 @@
             saveAircraft: (d) => localStorage.setItem('ogm_aircraft', JSON.stringify(d)),
             getPersonnel: () => JSON.parse(localStorage.getItem('ogm_personnel') || JSON.stringify(INITIAL_PERSONNEL)),
             savePersonnel: (d) => localStorage.setItem('ogm_personnel', JSON.stringify(d)),
-            getAttendance: () => JSON.parse(localStorage.getItem('ogm_attendance') || '[]'),
-            setAttendance: (data) => localStorage.setItem('ogm_attendance', JSON.stringify(data)),
+            getAttendance: () => {
+                const arr = JSON.parse(localStorage.getItem('ogm_attendance') || '[]');
+                return arr.map(r => ({ ...r, status: normalizeStatus(r.status) }));
+            },
+            setAttendance: (data) => {
+                const normalized = (data || []).map(r => ({ ...r, status: normalizeStatus(r.status) }));
+                localStorage.setItem('ogm_attendance', JSON.stringify(normalized));
+            },
             saveAttendance: (newRecords) => {
                 const existing = localData.getAttendance();
                 const others = existing.filter(e => !newRecords.some(n => n.personId === e.personId && n.date === e.date));
@@ -418,7 +461,7 @@
                         id: String(r.id),
                         personId: String(r.personId),
                         date: normalizeDate(r.date),
-                        status: r.status === 'İzinli' ? 'İzin' : r.status
+                        status: normalizeStatus(r.status)
                     })).filter(r => r.status && r.status !== '');
 
                     localData.setAttendance(formattedAtt);
@@ -554,7 +597,10 @@
 
         // AttendanceControl Component
         const AttendanceControl = ({ personId, state, isWeeklyMode, onChangeStatus, onChangeDetail, isWeekend, allAttendance = [] }) => {
-            const status = state?.status;
+            let status = normalizeStatus(state?.status);
+            if (!status) {
+                status = isWeekend ? undefined : AttendanceStatus.PRESENT;
+            }
 
             const handleStatusClick = (newStatus) => {
                 if (isWeekend && status === newStatus) {
@@ -955,8 +1001,9 @@
 
             const uniqueModels = useMemo(() => {
                 const models = [...new Set(acList.map(a => a.model))].filter(m => m && m.length > 1);
-                // Add YÖNETİM manually if not in list
+                // Add YÖNETİM and İDARİ BİRİM manually if not in list
                 if (!models.includes('YÖNETİM')) models.push('YÖNETİM');
+                if (!models.includes('İDARİ BİRİM')) models.push('İDARİ BİRİM');
                 return models.sort();
             }, [acList]);
 
@@ -1180,19 +1227,48 @@
                 return Array.from(cities).sort();
             }, [allAttendance]);
 
-            const getHarcirahCategory = (p) => {
-                const title = (p.title || '').toLocaleUpperCase('tr-TR');
-                const unit = (p.unit || '').toLocaleUpperCase('tr-TR');
-                
-                if (title.includes('AT-802 TEKNİSYEN')) return 'AT-802';
-                if (title.includes('BELL-429 TEKNİSYEN')) return 'BELL-429';
-                if (title.includes('C-650 TEKNİSYEN')) return 'C-650';
-                if (title.includes('B-360 TEKNİSYEN')) return 'B-360';
-                if (title.includes('T-70 TEKNİSYEN')) return 'T-70';
-                
-                if (unit.includes('TEKNİK EKİP') || title.includes('TEKNİSYEN') || title.includes('TEKNİKER') || title.includes('MÜHENDİS')) return 'TEKNİK EKİPLER';
-                if (p.role === Role.DRIVER || title.includes('ŞÖFÖR')) return 'ŞÖFÖRLER';
-                return 'DİĞER';
+            const isPersonInUnit = (p, selModel) => {
+                if (YONETIM_NAMES.includes(p.fullName)) return false;
+
+                const targetModel = (selModel === 'İDARİ' || selModel === 'İDARİ BİRİM') ? AircraftModel.IDARI_BIRIM : selModel;
+
+                // 1. PRIORITIZE EXPLICIT UNIT ASSIGNMENT
+                if (p.unit) {
+                    const pUnitNormalized = (p.unit === 'İDARİ' || p.unit === 'İDARİ BİRİM') ? AircraftModel.IDARI_BIRIM : p.unit;
+                    return pUnitNormalized === targetModel;
+                }
+
+                // 2. FALLBACK TO TITLE/ROLE MATCHING
+                const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
+                const role = p.role;
+                const tClean = titleUpper.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ]/g, '');
+
+                const specificAircraftTags = uniqueModels
+                    .filter(m => m !== AircraftModel.YER_DESTEK && m !== AircraftModel.TEKNIK_EKIP && m !== AircraftModel.IDARI_BIRIM)
+                    .map(m => m.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ]/g, '').toLocaleUpperCase('tr-TR'));
+
+                const belongsToSpecificAircraft = specificAircraftTags.some(tag => tClean.includes(tag));
+
+                if (targetModel === AircraftModel.YER_DESTEK) {
+                    if (p.fullName.includes('SERKAN KOTAN')) return true;
+                    if (belongsToSpecificAircraft) return false;
+                    
+                    const isTechnicalRole = titleUpper.includes('UÇAK TEKNİ') || titleUpper.includes('MÜHENDİS');
+                    if (isTechnicalRole) return false;
+
+                    const isGroundRole = [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(role);
+                    const isGroundTitle = titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('ŞÖFÖR');
+                    return isGroundRole || isGroundTitle;
+                } else if (targetModel === AircraftModel.TEKNIK_EKIP) {
+                    if (p.fullName.includes('SERKAN KOTAN')) return false;
+                    if (belongsToSpecificAircraft) return false;
+                    return titleUpper.includes('UÇAK TEKNİ') || titleUpper.includes('MÜHENDİS');
+                } else if (targetModel === AircraftModel.IDARI_BIRIM) {
+                    return (titleUpper === 'MEMUR' || titleUpper.includes('İDARİ')) && !belongsToSpecificAircraft;
+                } else {
+                    const mNameNormalized = targetModel.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ]/g, '').toLocaleUpperCase('tr-TR');
+                    return tClean.includes(mNameNormalized);
+                }
             };
 
             const handleHarcirahCitySelect = (city) => {
@@ -1217,7 +1293,7 @@
             const availableHarcirahRanges = useMemo(() => {
                 if (!selectedHarcirahCity || !selectedHarcirahUnit) return [];
                 
-                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
+                const unitPersonIds = new Set(plList.filter(p => isPersonInUnit(p, selectedHarcirahUnit)).map(p => p.id));
                 const monthKeys = new Set();
                 
                 // Group each person's duties into blocks and determine their majority month
@@ -1272,7 +1348,7 @@
 
             const getMonthSubBlocks = useCallback((monthKey) => {
                 if (!selectedHarcirahCity || !selectedHarcirahUnit) return [];
-                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
+                const unitPersonIds = new Set(plList.filter(p => isPersonInUnit(p, selectedHarcirahUnit)).map(p => p.id));
                 const allUnitDutyDates = allAttendance.filter(r => 
                     unitPersonIds.has(r.personId) && 
                     r.status === AttendanceStatus.DUTY &&
@@ -1311,7 +1387,7 @@
             const handleHarcirahRangeSelect = (range) => {
                 setSelectedHarcirahRange(range);
                 
-                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
+                const unitPersonIds = new Set(plList.filter(p => isPersonInUnit(p, selectedHarcirahUnit)).map(p => p.id));
                 
                 // Find personnel who had a block with majority month equal to range.monthKey
                 const personIdsInRange = new Set();
@@ -1329,7 +1405,7 @@
                     }
                 });
 
-                const eligible = plList.filter(p => personIdsInRange.has(p.id) && getHarcirahCategory(p) === selectedHarcirahUnit);
+                const eligible = plList.filter(p => personIdsInRange.has(p.id) && isPersonInUnit(p, selectedHarcirahUnit));
                 setHarcirahPersonnel(eligible);
                 
                 // Initialize selected dates for each person
@@ -1563,19 +1639,22 @@
             const exportPersonnelExcel = async () => {
                 const getPUnit = (pers) => {
                     if (YONETIM_NAMES.includes(pers.fullName)) return "YÖNETİM";
-                    if (pers.unit) return pers.unit;
+                    if (pers.unit && (pers.unit === "İDARİ" || pers.unit === "İDARİ BİRİM" || unitOrder.includes(pers.unit))) {
+                        return (pers.unit === "İDARİ" || pers.unit === "İDARİ BİRİM") ? "İDARİ BİRİM" : pers.unit;
+                    }
                     const titleUpper = (pers.title || '').toLocaleUpperCase('tr-TR');
                     if (titleUpper.includes('BELL')) return "BELL-429";
                     if (titleUpper.includes('C-650')) return "C-650";
                     if (titleUpper.includes('B-360')) return "B-360";
                     if (titleUpper.includes('T-70')) return "T-70";
                     if (titleUpper.includes('AT-802')) return "AT-802";
+                    if (titleUpper.includes('İDARİ') || titleUpper === 'MEMUR') return "İDARİ BİRİM";
                     if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
                     if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(pers.role)) return "YER DESTEK";
-                    return "İDARİ";
+                    return "İDARİ BİRİM";
                 };
 
-                const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ"];
+                const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"];
                 
                 const activePersonnel = plList
                     .filter(p => !p.activeUntil)
@@ -1925,7 +2004,7 @@
                                                 <div className="space-y-2 animate-slide-down">
                                                     <label className="text-xs font-bold text-forest-400 uppercase">2. Birim Seçiniz</label>
                                                     <div className="space-y-2">
-                                                        {['AT-802', 'BELL-429', 'C-650', 'B-360', 'T-70', 'TEKNİK EKİPLER', 'ŞÖFÖRLER', 'DİĞER'].map(cat => (
+                                                        {uniqueModels.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK' && m !== 'YÖNETİM').map(cat => (
                                                             <button 
                                                                 key={cat} 
                                                                 onClick={() => handleHarcirahUnitSelect(cat)}
@@ -2364,7 +2443,7 @@
                                         </thead>
                                         <tbody>
                                             {plList
-                                                .filter(p => getHarcirahCategory(p) === selectedHarcirahUnit)
+                                                .filter(p => isPersonInUnit(p, selectedHarcirahUnit))
                                                 .map(p => (
                                                     <tr key={p.id} className="hover:bg-forest-800/30 transition-colors">
                                                         <td className="p-2 border border-forest-700 font-medium sticky left-0 bg-forest-900 z-[5]">{p.fullName}</td>
@@ -2537,30 +2616,36 @@
             const todayObj = new Date(today + 'T12:00:00');
             const isTodayWeekend = todayObj.getDay() === 0 || todayObj.getDay() === 6;
 
-            const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ"];
+            const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"];
             const getPUnit = (p) => {
                 if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
-                if (p.unit && unitOrder.includes(p.unit)) return p.unit;
+                if (p.unit && (p.unit === "İDARİ" || p.unit === "İDARİ BİRİM" || unitOrder.includes(p.unit))) {
+                    return (p.unit === "İDARİ" || p.unit === "İDARİ BİRİM") ? "İDARİ BİRİM" : p.unit;
+                }
                 const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
                 if (titleUpper.includes('BELL')) return "BELL-429";
                 if (titleUpper.includes('C-650')) return "C-650";
                 if (titleUpper.includes('B-360')) return "B-360";
                 if (titleUpper.includes('T-70')) return "T-70";
                 if (titleUpper.includes('AT-802')) return "AT-802";
+                if (titleUpper.includes('İDARİ') || titleUpper === 'MEMUR') return "İDARİ BİRİM";
                 if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
                 if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(p.role)) return "YER DESTEK";
-                return "İDARİ";
+                return "İDARİ BİRİM";
             };
 
             const filteredPersonnel = personnel.filter(p => {
                 const isSeparated = p.activeUntil && today > p.activeUntil;
-                const isYerDestek = getPUnit(p) === "YER DESTEK";
-                return !isSeparated && !isYerDestek;
+                const unit = getPUnit(p);
+                const isExcluded = unit === "YER DESTEK" || unit === "TEKNİK EKİP" || unit === "YÖNETİM";
+                return !isSeparated && !isExcluded;
             });
 
             const resolvePersonStatus = (p, dateStr, attendanceList) => {
                 const r = attendanceList.find(a => a.personId === p.id && a.date === dateStr && a.status && a.status !== '');
-                if (r) return r;
+                if (r) {
+                    return { ...r, status: normalizeStatus(r.status) };
+                }
                 
                 const dObj = new Date(dateStr + 'T12:00:00');
                 const isWe = dObj.getDay() === 0 || dObj.getDay() === 6;
@@ -3637,23 +3722,38 @@
                 try {
                     const freshRecs = storageService.getAttendanceSync();
                     const finalPersonnel = await storageService.getPersonnelSync();
-                    const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ"];
+                    const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"];
                     const fUK = (p) => {
                         if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
-                        if (p.unit && unitOrder.includes(p.unit)) return p.unit;
+                        if (p.unit && (p.unit === "İDARİ" || p.unit === "İDARİ BİRİM" || unitOrder.includes(p.unit))) {
+                            return (p.unit === "İDARİ" || p.unit === "İDARİ BİRİM") ? "İDARİ BİRİM" : p.unit;
+                        }
                         const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
                         if (titleUpper.includes('BELL')) return "BELL-429";
                         if (titleUpper.includes('C-650')) return "C-650";
                         if (titleUpper.includes('B-360')) return "B-360";
                         if (titleUpper.includes('T-70')) return "T-70";
                         if (titleUpper.includes('AT-802')) return "AT-802";
+                        if (titleUpper.includes('İDARİ') || titleUpper === 'MEMUR') return "İDARİ BİRİM";
                         if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
                         if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(p.role)) return "YER DESTEK";
-                        return "İDARİ";
+                        return "İDARİ BİRİM";
                     };
                     let targetP = [...finalPersonnel];
                     const startDateForFilter = isDaily ? getTodayString() : dates.start, endDateForFilter = isDaily ? getTodayString() : dates.end;
                     targetP = targetP.filter(p => !(p.activeUntil && p.activeUntil < startDateForFilter) && !(p.activeFrom && p.activeFrom > endDateForFilter));
+                    targetP = targetP.filter(p => {
+                        const unit = fUK(p);
+                        return unit !== "YÖNETİM" && unit !== "TEKNİK EKİP" && unit !== "YER DESTEK";
+                    });
+
+                    if (reportUnit && reportUnit !== 'TÜM BİRİMLER') {
+                        targetP = targetP.filter(p => fUK(p) === reportUnit);
+                    }
+                    if (reportSearch && reportSearch.trim() !== '') {
+                        const searchUpper = reportSearch.toLocaleUpperCase('tr-TR').trim();
+                        targetP = targetP.filter(p => p.fullName.toLocaleUpperCase('tr-TR').includes(searchUpper));
+                    }
                     targetP.sort((a, b) => { 
                         const uA = fUK(a); 
                         const uB = fUK(b); 
@@ -3859,7 +3959,15 @@
                : (r.status === AttendanceStatus.PUBLIC_HOLIDAY ? 'İ.İ.' : r.status)));
         }
     }
-                            html += `<td ${r && ![AttendanceStatus.PRESENT, AttendanceStatus.DUTY].includes(r.status) ? rbStyle : cStyle}>${(ct === 'MEVCUT' || ct === 'Mevcut') ? '' : ct}</td>`;
+                            const cellVal = (ct && (
+                                ct.toLocaleUpperCase('tr-TR') === 'MEVCUT' || 
+                                ct.toLocaleUpperCase('tr-TR') === 'MESAİ' || 
+                                ct.toLocaleUpperCase('tr-TR') === 'MESAİDE' || 
+                                ct.toLocaleUpperCase('tr-TR') === 'MESAI' || 
+                                ct.toLocaleUpperCase('tr-TR') === 'MESAIDE'
+                            )) ? 'X' : ct;
+                            const isCellValX = cellVal === 'X' || cellVal === 'x';
+                            html += `<td ${r && ![AttendanceStatus.PRESENT, AttendanceStatus.DUTY].includes(r.status) && !isCellValX ? rbStyle : cStyle}>${cellVal}</td>`;
                         });
                         activeCols.forEach(col => html += `<td ${numStyle}>${fmt(s[col.key])}</td>`);
                         let totalActive = 0; days.forEach(d => { if (!(p.activeUntil && normalizeDate(d) > p.activeUntil) && !(p.activeFrom && normalizeDate(d) < p.activeFrom)) totalActive++; });
@@ -4005,7 +4113,7 @@
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                      <div>
                                         <label className="text-xs text-forest-400 block mb-1">Birim Seçimi</label>
-                                        <select className="w-full bg-forest-950 border border-forest-600 text-white rounded p-2 text-sm" value={reportUnit} onChange={(e) => setReportUnit(e.target.value)}><option value="TÜM BİRİMLER">TÜM BİRİMLER</option><option value="YÖNETİM">YÖNETİM</option>{models.map(m => <option key={m} value={m}>{m}</option>)}</select>
+                                        <select className="w-full bg-forest-950 border border-forest-600 text-white rounded p-2 text-sm" value={reportUnit} onChange={(e) => setReportUnit(e.target.value)}><option value="TÜM BİRİMLER">TÜM BİRİMLER</option>{models.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK' && m !== 'YÖNETİM' && m !== 'İDARİ BİRİM').map(m => <option key={m} value={m}>{m}</option>)}<option value="İDARİ BİRİM">İDARİ BİRİM</option></select>
                                      </div>
                                      <div>
                                         <label className="text-xs text-forest-400 block mb-1">Personel Arama</label>
