@@ -115,7 +115,7 @@
         };
 
         const AttendanceStatus = {
-            PRESENT: 'Mesai',
+            PRESENT: 'Mevcut',
             ABSENT: 'Yok',
             LEAVE: 'İzin', 
             SICK: 'Rapor', 
@@ -140,7 +140,7 @@
             UNPLANNED: 'Plansız'
         };
 
-        const YONETIM_NAMES = ["MEHMET SEFA YÜCEDAĞ", "TEZCAN GÜZER"];
+        const YONETIM_NAMES = ["MEHMET SEFA YÜCEDAĞ", "TEZCAN GÜZER", "ALPER ÖZMETİN" ,"MURAT AKMEŞE"];
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrSGyePf9zWvgDsnWVvdBrxCc_yNs7h6NifZKNyqQ-iFDl3StMtGmCwbx-Lvnt-ax9/exec"; 
 
@@ -177,6 +177,8 @@
             { id: '21', tailNumber: 'OR-2028', model: AircraftModel.AT_802, category: AircraftCategory.PLANE, city: 'Ankara' },
             { id: '22', tailNumber: 'OR-2029', model: AircraftModel.AT_802, category: AircraftCategory.PLANE, city: 'Ankara' },
             { id: '23', tailNumber: 'OR-2037', model: AircraftModel.AT_802, category: AircraftCategory.PLANE, city: 'Ankara' },
+            { id: '24', tailNumber: 'MERKEZ', model: AircraftModel.TEKNIK_EKIP, category: AircraftCategory.TECHNICAL, city: 'Ankara' },
+            { id: '25', tailNumber: 'DESTEK', model: AircraftModel.YER_DESTEK, category: AircraftCategory.GROUND, city: 'Ankara' },
         ];
 
         const INITIAL_PERSONNEL = [
@@ -194,6 +196,7 @@
             { id: 'p13', rank: 13, fullName: 'BARIŞ UZUN', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
             { id: 'p14', rank: 14, fullName: 'SERKAN KEBAPCI', role: Role.TECHNICIAN, title: 'B-360 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
             { id: 'p15', rank: 15, fullName: 'ÜMİT NAİLLİOĞLU', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'İzmir', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' }, 
+            { id: 'p16', rank: 16, fullName: 'ALPER ÖZMETİN', role: Role.TECHNICIAN, title: 'B-360 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
             { id: 'p17', rank: 17, fullName: 'TEZCAN GÜZER', role: Role.TECHNICIAN, title: 'C-650 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' }, 
             { id: 'p18', rank: 18, fullName: 'VELİ ERSOY', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
             { id: 'p19', rank: 19, fullName: 'YUSUF BAŞPINAR', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
@@ -227,6 +230,29 @@
             { id: 'p49', rank: 49, fullName: 'FATİH PARLAK', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
             { id: 'p50', rank: 50, fullName: 'ABDURRAHİM DEMİR', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
             { id: 'p51', rank: 51, fullName: 'M.SERKAN KOTAN', role: Role.TECHNICIAN, title: 'MÜHENDİS', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p52', rank: 52, fullName: 'GÖKTÜRK AKBUDAK', role: Role.TECHNICIAN, title: 'UÇAK TEKNİKERİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p53', rank: 53, fullName: 'ESİN GÜNGÖR', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p54', rank: 54, fullName: 'DİLARA USLU', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p55', rank: 55, fullName: 'ZEKERİYA EVİRGEN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p56', rank: 56, fullName: 'M.ZAHİD DURSUN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p57', rank: 57, fullName: 'ŞÜKRAN BAYER', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p58', rank: 58, fullName: 'MUSTAFA ÖZKAN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p59', rank: 59, fullName: 'ALKAN BALTACI', role: Role.TECHNICIAN, title: 'UÇAK TEKNİKERİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p60', rank: 60, fullName: 'MAHİR YILMAZ', role: Role.TECHNICIAN, title: 'UÇAK TEKNİKERİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p61', rank: 61, fullName: 'FATİH ÇAMUR', role: Role.TECHNICIAN, title: 'UÇAK TEKNİKERİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p62', rank: 62, fullName: 'EGE ERAKAY', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p63', rank: 63, fullName: 'YİĞİTHAN SARIHAN', role: Role.OTHER, title: 'DESTEK MEMUR', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p64', rank: 64, fullName: 'ABDULLAH YAPICI', role: Role.OTHER, title: 'DESTEK MEMUR', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p65', rank: 65, fullName: 'MUHAMMET DİLCİ', role: Role.DRIVER, title: 'DESTEK MEMUR(ŞÖFÖR)', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p66', rank: 66, fullName: 'YASİN DOĞAN', role: Role.DRIVER, title: 'DESTEK MEMUR(ŞÖFÖR)', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p67', rank: 67, fullName: 'RIDVAN ŞATIR', role: Role.DRIVER, title: 'DESTEK MEMUR(ŞÖFÖR)', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p68', rank: 68, fullName: 'BEYHAN SAYGIN', role: Role.CLEANING, title: 'İŞÇİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p69', rank: 69, fullName: 'NAZMİYE DEDE', role: Role.CLEANING, title: 'İŞÇİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p70', rank: 70, fullName: 'BEKİR EKİNCİ', role: Role.CLEANING, title: 'İŞÇİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p71', rank: 71, fullName: 'ENES KAHYAOĞLU', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p72', rank: 72, fullName: 'KEREM DELİCE', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p73', rank: 73, fullName: 'MUHAMMED FATİH ŞAHİN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
+            { id: 'p74', rank: 74, fullName: 'EREN KAPLAN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
         ];
 
         // --- UTILS ---
@@ -249,9 +275,26 @@
                 return `${year}-${month}-${day}`;
             }
             if (typeof d === 'string') {
-                if (d.includes('T')) return d.split('T')[0];
-                if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
-                if (d.length >= 10) return d.substring(0, 10);
+                const cleaned = d.trim();
+                if (cleaned.includes('T')) return cleaned.split('T')[0];
+                if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) return cleaned;
+                
+                const partsDot = cleaned.split('.');
+                if (partsDot.length === 3 && partsDot[2].length === 4) {
+                    const day = partsDot[0].padStart(2, '0');
+                    const month = partsDot[1].padStart(2, '0');
+                    const year = partsDot[2];
+                    return `${year}-${month}-${day}`;
+                }
+                const partsSlash = cleaned.split('/');
+                if (partsSlash.length === 3 && partsSlash[2].length === 4) {
+                    const day = partsSlash[0].padStart(2, '0');
+                    const month = partsSlash[1].padStart(2, '0');
+                    const year = partsSlash[2];
+                    return `${year}-${month}-${day}`;
+                }
+                
+                if (cleaned.length >= 10) return cleaned.substring(0, 10);
             }
             return '';
         };
@@ -290,7 +333,9 @@
             saveAttendance: (newRecords) => {
                 const existing = localData.getAttendance();
                 const others = existing.filter(e => !newRecords.some(n => n.personId === e.personId && n.date === e.date));
-                const merged = [...others, ...newRecords];
+                // Only merge records that have a non-empty status (filter out deletion stubs)
+                const filteredNew = newRecords.filter(n => n.status && n.status !== '');
+                const merged = [...others, ...filteredNew];
                 localStorage.setItem('ogm_attendance', JSON.stringify(merged));
                 return merged;
             }
@@ -374,7 +419,7 @@
                         personId: String(r.personId),
                         date: normalizeDate(r.date),
                         status: r.status === 'İzinli' ? 'İzin' : r.status
-                    }));
+                    })).filter(r => r.status && r.status !== '');
 
                     localData.setAttendance(formattedAtt);
                     memoryCache.attendance = formattedAtt;
@@ -418,7 +463,7 @@
             saveAttendance: async (data) => {
                 const updatedFullList = localData.saveAttendance(data);
                 memoryCache.attendance = updatedFullList;
-                apiCall('save_attendance', { records: data }).catch(e => console.error("BG Save fail", e));
+                await apiCall('save_attendance', { records: data });
                 return updatedFullList;
             },
             fetchSafeImage: async (fileId) => {
@@ -432,6 +477,20 @@
                     return null;
                 } catch(e) {
                     return null;
+                }
+            },
+            checkExternalOvertime: async () => {
+                try {
+                    return await apiCall('check_external_overtime');
+                } catch(e) {
+                    return { count: 0 };
+                }
+            },
+            syncExternalOvertime: async (filterIds = null) => {
+                try {
+                    return await apiCall('sync_external_overtime', { filterIds });
+                } catch(e) {
+                    throw e;
                 }
             },
             initBackgroundCaching: async (personnelList) => {
@@ -494,10 +553,10 @@
         };
 
         // AttendanceControl Component
-        const AttendanceControl = ({ personId, state, isWeeklyMode, isWeekend, aircraftModel, onChangeStatus, onChangeDetail, allAttendance = [] }) => {
+        const AttendanceControl = ({ personId, state, isWeeklyMode, onChangeStatus, onChangeDetail, isWeekend, allAttendance = [] }) => {
             const status = state?.status;
 
-            const handleToggleStatus = (newStatus) => {
+            const handleStatusClick = (newStatus) => {
                 if (isWeekend && status === newStatus) {
                     onChangeStatus(personId, undefined);
                 } else {
@@ -505,90 +564,52 @@
                 }
             };
 
-            const getLocations = () => {
-                if (!aircraftModel) return CITIES;
+            const sortedCities = useMemo(() => {
+                let records = allAttendance;
+                if (!records || records.length === 0) {
+                    try {
+                        const local = localStorage.getItem('ogm_attendance');
+                        if (local) records = JSON.parse(local);
+                    } catch (e) {
+                        console.error("Failed to parse ogm_attendance", e);
+                    }
+                }
+                if (!Array.isArray(records)) records = [];
                 
-                if (aircraftModel === AircraftModel.T_70) {
-                    return ['Muğla/Güvercinlik', 'Muğla/Yanıklar', 'YURT DIŞI', 'DİĞER'];
-                }
-                if (aircraftModel === AircraftModel.AT_802) {
-                    return ['Çanakkale', 'Milas', 'Balıkesir/ Edremit', 'İzmir /Efes', 'Bursa', 'Antalya', 'YURT DIŞI', 'DİĞER'];
-                }
-                if (aircraftModel === AircraftModel.BELL_429) {
-                    return ['Çanakkale', 'İzmir', 'Muğla', 'Antalya', 'Ankara', 'YURT DIŞI', 'DİĞER'];
-                }
-                if (aircraftModel === AircraftModel.B_360 || aircraftModel === AircraftModel.C_650) {
-                    return [...CITIES.filter(c => c !== 'YURT DIŞI'), 'YURT DIŞI', 'DİĞER'];
-                }
-                return CITIES;
-            };
-
-            const rawLocations = getLocations();
-            const locations = useMemo(() => {
-                if (!allAttendance || allAttendance.length === 0) return rawLocations;
-                
-                // Count frequencies
                 const counts = {};
-                allAttendance.forEach(r => {
-                    if (r && r.status && r.dutyLocation) {
-                        const sUpper = r.status.trim().toLocaleUpperCase('tr-TR');
-                        if (sUpper === 'GÖREV' || sUpper === 'DUTY') {
-                            const loc = r.dutyLocation.trim().toLocaleUpperCase('tr-TR');
-                            counts[loc] = (counts[loc] || 0) + 1;
-                            
-                            // Also support base city matching (e.g. if loc is "Muğla/Güvercinlik", count Muğla too)
-                            const parts = loc.split('/');
-                            if (parts.length > 1) {
-                                const base = parts[0].trim();
-                                counts[base] = (counts[base] || 0) + 1;
-                            }
-                        }
+                records.forEach(r => {
+                    if (r && r.status === 'Görev' && r.dutyLocation) {
+                        const loc = r.dutyLocation.trim().toLocaleUpperCase('tr-TR');
+                        counts[loc] = (counts[loc] || 0) + 1;
                     }
                 });
                 
-                const sorted = [...rawLocations];
-                sorted.sort((a, b) => {
-                    const aIsSpecial = a === 'YURT DIŞI' || a === 'DİĞER';
-                    const bIsSpecial = b === 'YURT DIŞI' || b === 'DİĞER';
-                    
-                    if (aIsSpecial || bIsSpecial) {
-                        if (aIsSpecial && bIsSpecial) {
-                            if (a === 'YURT DIŞI' && b === 'DİĞER') return -1;
-                            if (a === 'DİĞER' && b === 'YURT DIŞI') return 1;
-                            return 0;
-                        }
-                        if (aIsSpecial) return 1;
-                        if (bIsSpecial) return -1;
-                    }
-                    
-                    const aBase = a.split('/')[0].trim().toLocaleUpperCase('tr-TR');
-                    const bBase = b.split('/')[0].trim().toLocaleUpperCase('tr-TR');
-                    const aExact = a.trim().toLocaleUpperCase('tr-TR');
-                    const bExact = b.trim().toLocaleUpperCase('tr-TR');
-                    
-                    const countA = counts[aExact] || counts[aBase] || 0;
-                    const countB = counts[bExact] || counts[bBase] || 0;
+                const pureCities = CITIES.filter(c => c !== 'YURT DIŞI');
+                pureCities.sort((a, b) => {
+                    const aUpper = a.trim().toLocaleUpperCase('tr-TR');
+                    const bUpper = b.trim().toLocaleUpperCase('tr-TR');
+                    const countA = counts[aUpper] || 0;
+                    const countB = counts[bUpper] || 0;
                     
                     if (countB !== countA) {
                         return countB - countA;
                     }
-                    
-                    return rawLocations.indexOf(a) - rawLocations.indexOf(b);
+                    return a.localeCompare(b, 'tr-TR');
                 });
-                return sorted;
-            }, [rawLocations, allAttendance]);
+                return pureCities;
+            }, [allAttendance]);
 
             return (
                 <div className="flex flex-col xl:flex-row items-start xl:items-center gap-4 w-full">
                     <div className="flex flex-wrap gap-2 w-full xl:w-auto">
-                        <button onClick={() => handleToggleStatus(AttendanceStatus.PRESENT)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.PRESENT || (!status && !isWeekend) ? 'bg-green-600 border-green-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
-                            Mesai
+                        <button onClick={() => handleStatusClick(AttendanceStatus.PRESENT)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${(status === AttendanceStatus.PRESENT) ? 'bg-green-600 border-green-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
+                            Mevcut
                         </button>
 
-                        <button onClick={() => handleToggleStatus(AttendanceStatus.DUTY)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.DUTY ? 'bg-blue-600 border-blue-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
+                        <button onClick={() => handleStatusClick(AttendanceStatus.DUTY)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.DUTY ? 'bg-blue-600 border-blue-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
                             Görev
                         </button>
-                         <button onClick={() => handleToggleStatus(AttendanceStatus.COURSE)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.COURSE ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
+                         <button onClick={() => handleStatusClick(AttendanceStatus.COURSE)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.COURSE ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
                             Kurs
                         </button>
 
@@ -603,14 +624,14 @@
                                 activeClass = 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500';
                             }
                             return (
-                                <button key={s} onClick={() => handleToggleStatus(s)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${activeClass}`}>
+                                <button key={s} onClick={() => handleStatusClick(s)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${activeClass}`}>
                                     {s}
                                 </button>
                             );
                         })}
 
                         <button
-                            onClick={() => handleToggleStatus(AttendanceStatus.PUBLIC_HOLIDAY)}
+                            onClick={() => handleStatusClick(AttendanceStatus.PUBLIC_HOLIDAY)}
                             className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.PUBLIC_HOLIDAY
                                     ? 'bg-orange-600 border-orange-500 text-white'
                                     : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'
@@ -620,7 +641,7 @@
                         </button>
 
                         <button
-                            onClick={() => handleToggleStatus(AttendanceStatus.OTHER)}
+                            onClick={() => handleStatusClick(AttendanceStatus.OTHER)}
                             className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.OTHER
                                     ? 'bg-purple-600 border-purple-500 text-white'
                                     : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'
@@ -629,7 +650,7 @@
                             Diğer
                         </button>
 
-                         <button onClick={() => handleToggleStatus(AttendanceStatus.ABSENT)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.ABSENT ? 'bg-red-600 border-red-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
+                         <button onClick={() => handleStatusClick(AttendanceStatus.ABSENT)} className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all flex-grow sm:flex-grow-0 ${status === AttendanceStatus.ABSENT ? 'bg-red-600 border-red-500 text-white' : 'bg-forest-900 border-forest-700 text-forest-400 hover:border-forest-500'}`}>
                             Yok
                         </button>
                     </div>
@@ -658,43 +679,32 @@
                             </div>
                             <div className="flex items-center gap-2">
                                 <Globe size={16} className="text-blue-400 flex-shrink-0" />
-                                {state?.dutyType === DutyType.UNPLANNED ? (
-                                    <input 
-                                        type="text" 
-                                        placeholder="Görev yerini manuel giriniz" 
-                                        className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500" 
-                                        value={state.dutyLocation || ''} 
-                                        onChange={(e) => onChangeDetail(personId, 'dutyLocation', e.target.value)} 
-                                    />
-                                ) : (
-                                    <select
-                                        className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500"
-                                        value={(!state?.dutyLocation) ? "" : ((state.dutyLocation === 'DİĞER' || state.dutyLocation === 'YURT DIŞI' || locations.includes(state.dutyLocation)) ? state.dutyLocation : 'DİĞER')}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            onChangeDetail(personId, 'dutyLocation', val);
-                                        }}
-                                    >
-                                        <option value="" disabled>Görev Yeri Seç</option>
-                                        {locations.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                )}
+                                <select
+                                    className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500"
+                                    value={(!state?.dutyLocation) ? "" : ((state.dutyLocation === 'YURT DIŞI' || CITIES.includes(state.dutyLocation)) ? state.dutyLocation : 'YURT DIŞI')}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        onChangeDetail(personId, 'dutyLocation', val === 'YURT DIŞI' ? 'YURT DIŞI' : val);
+                                    }}
+                                >
+                                    <option value="" disabled>Görev Yeri Seç</option>
+                                    {sortedCities.map(c => <option key={c} value={c}>{c}</option>)}
+                                    <option value="YURT DIŞI">DİĞER / YURT DIŞI</option>
+                                </select>
                             </div>
-                            {state?.dutyType !== DutyType.UNPLANNED && (state?.dutyLocation === 'DİĞER' || state?.dutyLocation === 'YURT DIŞI' || (state?.dutyLocation && !locations.includes(state.dutyLocation))) && (
-                                <input type="text" placeholder="Yer giriniz" className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500" value={(state.dutyLocation === 'DİĞER' || state.dutyLocation === 'YURT DIŞI') ? '' : state.dutyLocation} onChange={(e) => onChangeDetail(personId, 'dutyLocation', e.target.value)} />
+                            {(state?.dutyLocation === 'YURT DIŞI' || (state?.dutyLocation && !CITIES.includes(state.dutyLocation))) && (
+                                <input type="text" placeholder="Yer giriniz" className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500" value={state.dutyLocation === 'YURT DIŞI' ? '' : state.dutyLocation} onChange={(e) => onChangeDetail(personId, 'dutyLocation', e.target.value)} />
                             )}
                             {state?.dutyLocation && (
-                                <div className="flex flex-col gap-0.5 mt-0.5 border-t border-forest-800/70 pt-1.5">
-                                    <div className="flex items-center gap-2">
-                                        <input 
-                                            type="text" 
-                                            placeholder="Bölge adı giriniz" 
-                                            className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 w-full focus:ring-blue-500 focus:border-blue-500" 
-                                            value={state.dutyLocationDetail || ''} 
-                                            onChange={(e) => onChangeDetail(personId, 'dutyLocationDetail', e.target.value)} 
-                                        />
-                                        <span className="text-[10px] text-emerald-400 font-bold whitespace-nowrap">* bölge adı yazmak isterseniz yazınız</span>
-                                    </div>
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-1 w-full bg-forest-900/30 p-1.5 rounded border border-forest-800 animate-slide-down">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Bölge adı giriniz" 
+                                        className="bg-forest-800 border border-forest-600 text-white text-xs rounded p-1.5 flex-1 min-w-0 focus:ring-blue-500 focus:border-blue-500" 
+                                        value={state.dutyLocationDetail || ''} 
+                                        onChange={(e) => onChangeDetail(personId, 'dutyLocationDetail', e.target.value)} 
+                                    />
+                                    <span className="text-[10px] text-emerald-400 font-bold whitespace-nowrap">* bölge adı yazmak isterseniz yazınız</span>
                                 </div>
                             )}
                         </div>
@@ -1086,7 +1096,7 @@
                 }
             };
 
-             // --- Harcırah Logic ---
+            // --- Harcırah Logic ---
             const getMergedHarcirahBlocks = useCallback((datesArray) => {
                 if (!datesArray || datesArray.length === 0) return [];
                 const sorted = [...datesArray].sort();
@@ -1173,24 +1183,15 @@
             const getHarcirahCategory = (p) => {
                 const title = (p.title || '').toLocaleUpperCase('tr-TR');
                 const unit = (p.unit || '').toLocaleUpperCase('tr-TR');
-                const role = (p.role || '').toLocaleUpperCase('tr-TR');
                 
-                // 1. Aircraft Specific mapping (for both pilots and technicians etc)
-                if (title.includes('AT-802') || unit.includes('AT-802') || title.includes('AT802') || unit.includes('AT802')) return 'AT-802';
-                if (title.includes('BELL') || unit.includes('BELL') || title.includes('B-429') || unit.includes('B-429')) return 'BELL-429';
-                if (title.includes('C-650') || unit.includes('C-650') || title.includes('C650') || unit.includes('C650') || title.includes('CITATION') || unit.includes('CITATION')) return 'C-650';
-                if (title.includes('B-360') || unit.includes('B-360') || title.includes('B360') || unit.includes('B360') || title.includes('B-350') || unit.includes('B-350') || title.includes('B350') || unit.includes('B350') || title.includes('KING AIR') || unit.includes('KING AIR')) return 'B-360';
-                if (title.includes('T-70') || unit.includes('T-70') || title.includes('T70') || unit.includes('T70')) return 'T-70';
+                if (title.includes('AT-802 TEKNİSYEN')) return 'AT-802';
+                if (title.includes('BELL-429 TEKNİSYEN')) return 'BELL-429';
+                if (title.includes('C-650 TEKNİSYEN')) return 'C-650';
+                if (title.includes('B-360 TEKNİSYEN')) return 'B-360';
+                if (title.includes('T-70 TEKNİSYEN')) return 'T-70';
                 
-                // 2. Memur / İdari mappings
-                if (title.includes('MEMUR') || title.includes('İDARİ') || title.includes('IDARI') || unit.includes('İDARİ') || unit.includes('IDARI') || role.includes('MEMUR')) return 'İDARİ';
-                
-                // 3. Technical Ekip mapping
                 if (unit.includes('TEKNİK EKİP') || title.includes('TEKNİSYEN') || title.includes('TEKNİKER') || title.includes('MÜHENDİS')) return 'TEKNİK EKİPLER';
-                
-                // 4. Drivers
-                if (p.role === Role.DRIVER || title.includes('ŞÖFÖR') || title.includes('SOFOR')) return 'ŞÖFÖRLER';
-                
+                if (p.role === Role.DRIVER || title.includes('ŞÖFÖR')) return 'ŞÖFÖRLER';
                 return 'DİĞER';
             };
 
@@ -1518,7 +1519,7 @@
                     });
 
                     // Signature Block (Rank 1 - Murat Akmeşe Logic)
-                    const rank1Person = plList.find(p => p.rank === 1) || { fullName: 'Cengiz ÖZDEMİR', title: 'Kaptan Pilot' };
+                    const rank1Person = plList.find(p => p.rank === 1) || { fullName: 'Cengiz Özdemir', title: 'Kaptan Pilot' };
                     
                     // Signature block starts 4 rows below the last data row
                     const sigStartRow = lastDataRowIndex + 4;
@@ -1526,7 +1527,7 @@
                     
                     worksheet.mergeCells(`F${sigStartRow}:G${sigEndRow}`);
                     const sigCell = worksheet.getCell(`F${sigStartRow}`);
-                    sigCell.value = `${rank1Person.fullName}\nKaptan Pilot\nHava Araçları Bakım ve Teknik Şube Müdürü`;
+                    sigCell.value = `${rank1Person.fullName}\nKaptan Pilot\nUçuş İşletme ve Eğitim Şube Müdürü`;
                     sigCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                     sigCell.font = { bold: true };
 
@@ -1924,7 +1925,7 @@
                                                 <div className="space-y-2 animate-slide-down">
                                                     <label className="text-xs font-bold text-forest-400 uppercase">2. Birim Seçiniz</label>
                                                     <div className="space-y-2">
-                                                        {['AT-802', 'BELL-429', 'C-650', 'B-360', 'T-70', 'TEKNİK EKİPLER', 'ŞÖFÖRLER', 'İDARİ', 'DİĞER'].map(cat => (
+                                                        {['AT-802', 'BELL-429', 'C-650', 'B-360', 'T-70', 'TEKNİK EKİPLER', 'ŞÖFÖRLER', 'DİĞER'].map(cat => (
                                                             <button 
                                                                 key={cat} 
                                                                 onClick={() => handleHarcirahUnitSelect(cat)}
@@ -2533,126 +2534,162 @@
 
         const ReportDialog = ({ type, onClose, personnel, attendance }) => {
             const today = getTodayString();
+            const todayObj = new Date(today + 'T12:00:00');
+            const isTodayWeekend = todayObj.getDay() === 0 || todayObj.getDay() === 6;
 
-            const getPersonUnit = (p) => {
+            const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ"];
+            const getPUnit = (p) => {
                 if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
-                if (p.unit) return p.unit;
+                if (p.unit && unitOrder.includes(p.unit)) return p.unit;
                 const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
                 if (titleUpper.includes('BELL')) return "BELL-429";
                 if (titleUpper.includes('C-650')) return "C-650";
                 if (titleUpper.includes('B-360')) return "B-360";
                 if (titleUpper.includes('T-70')) return "T-70";
                 if (titleUpper.includes('AT-802')) return "AT-802";
-                if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK') || titleUpper.includes('MÜHENDİS')) return "TEKNİK EKİP";
-                if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('ŞÖFÖR')) return "YER DESTEK";
-                return "İDARİ BİRİM";
+                if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
+                if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(p.role)) return "YER DESTEK";
+                return "İDARİ";
+            };
+
+            const filteredPersonnel = personnel.filter(p => {
+                const isSeparated = p.activeUntil && today > p.activeUntil;
+                const isYerDestek = getPUnit(p) === "YER DESTEK";
+                return !isSeparated && !isYerDestek;
+            });
+
+            const resolvePersonStatus = (p, dateStr, attendanceList) => {
+                const r = attendanceList.find(a => a.personId === p.id && a.date === dateStr && a.status && a.status !== '');
+                if (r) return r;
+                
+                const dObj = new Date(dateStr + 'T12:00:00');
+                const isWe = dObj.getDay() === 0 || dObj.getDay() === 6;
+                const hist = attendanceList
+                    .filter(x => x.personId === p.id && x.date < dateStr && x.status && x.status !== '')
+                    .sort((a, b) => b.date.localeCompare(a.date))[0];
+                
+                if (isWe) {
+                    return { status: undefined };
+                } else {
+                    if (hist) {
+                        const carryOverStatuses = [AttendanceStatus.PRESENT, AttendanceStatus.DUTY];
+                        if (carryOverStatuses.includes(hist.status)) {
+                            return {
+                                ...hist,
+                                leaveType: hist.leaveType || LeaveType.DAILY,
+                                dutyType: hist.dutyType || DutyType.PLANNED
+                            };
+                        } else {
+                            return { status: AttendanceStatus.PRESENT };
+                        }
+                    } else {
+                        return { status: AttendanceStatus.PRESENT };
+                    }
+                }
             };
             
             const Header = () => (
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-forest-500 pb-4 gap-4">
-                    <div className="flex items-center gap-3">
-                       <div className="bg-orange-600 p-2 rounded-lg shadow-inner shrink-0 md:p-3"><LucideIcons.Plane className="text-white" size={24} /></div>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-forest-500 pb-4 gap-4">
+                    <div className="flex items-center gap-4">
+                       <div className="bg-orange-600 p-2 sm:p-3 rounded-lg shadow-inner"><LucideIcons.Plane className="text-white w-6 h-6 sm:w-8 sm:h-8" /></div>
                        <div>
-                            <h2 className="text-xl md:text-3xl font-extrabold text-white tracking-tight">
+                            <h2 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
                                 {type === 'MESAI' && 'MESAİ DURUMU (GÜNLÜK)'}
                                 {type === 'FMİ' && 'FAZLA MESAİ İZNİ (GÜNLÜK)'}
                                 {type === 'GÖREV' && 'GÖREV DURUMU (GÜNLÜK)'}
                             </h2>
-                            <p className="text-forest-400 text-xs md:text-sm font-medium">{new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' })}</p>
+                            <p className="text-forest-400 text-xs sm:text-sm font-medium">{new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' })}</p>
                        </div>
                     </div>
-                    <button onClick={onClose} className="absolute top-4 right-4 md:relative md:top-0 md:right-0 bg-white/10 hover:bg-red-600 text-white p-2 md:p-3 rounded-full transition-all duration-300 group shadow-lg">
-                        <LucideIcons.X size={24} className="group-hover:rotate-90 transition-transform" />
+                    <button onClick={onClose} className="absolute sm:relative top-4 right-4 sm:top-0 sm:right-0 bg-white/10 hover:bg-red-600 text-white p-2 sm:p-3 rounded-full transition-all duration-300 group shadow-lg">
+                        <LucideIcons.X className="group-hover:rotate-90 transition-transform w-6 h-6 sm:w-8 sm:h-8" />
                     </button>
                 </div>
             );
 
             const PersonItem = ({ p }) => {
-                const r = attendance.find(a => a.personId === p.id && a.date === today);
-                let fullNameDisplay = p.fullName;
-                if (type === 'GÖREV' && r && r.dutyLocationDetail && r.dutyLocationDetail.trim()) {
-                    fullNameDisplay = `${p.fullName} (${r.dutyLocationDetail.trim()})`.toLocaleUpperCase('tr-TR');
+                let displayName = p.fullName;
+                if (type === 'GÖREV') {
+                    const resolved = resolvePersonStatus(p, today, attendance);
+                    if (resolved && resolved.dutyLocationDetail && resolved.dutyLocationDetail.trim()) {
+                        displayName = `${p.fullName} (${resolved.dutyLocationDetail.trim()})`.toLocaleUpperCase('tr-TR');
+                    }
                 }
                 return (
-                    <div className="flex items-center gap-3 p-2 bg-forest-950/60 rounded-xl border border-forest-700/50 hover:border-orange-500/50 hover:bg-forest-800/60 transition-all duration-300 group shadow-md hover:shadow-orange-500/10 mb-1">
-                        <div className="hidden md:block w-12 h-12 rounded-lg border-2 border-forest-700 overflow-hidden bg-forest-900 flex-shrink-0 group-hover:border-orange-500/50 transition-colors">
+                    <div className="flex items-center gap-4 p-3 bg-forest-950/40 rounded-xl border border-forest-700/30 hover:border-orange-500/30 hover:bg-forest-800/40 transition-all duration-300 group shadow-sm hover:shadow-orange-500/10">
+                        <div className="hidden sm:block w-12 h-12 rounded-lg border border-forest-700/50 overflow-hidden bg-forest-900 flex-shrink-0 group-hover:border-orange-500/30 transition-colors">
                             <SafeImage src={p.photoUrl} personId={p.id} className="personnel-photo-square" />
                         </div>
                         <div className="overflow-hidden">
-                            <div className="text-sm md:text-lg font-bold text-white group-hover:text-orange-400 transition-colors truncate">{fullNameDisplay}</div>
-                            <div className="text-[10px] md:text-xs text-forest-400 font-semibold uppercase tracking-wider truncate">{getDisplayTitle(p.title, p.role)}</div>
+                            <div className="text-sm sm:text-base font-bold text-white group-hover:text-orange-400 transition-colors truncate">{displayName}</div>
+                            <div className="text-[10px] sm:text-xs text-forest-400 font-semibold uppercase tracking-wider truncate">{getDisplayTitle(p.title, p.role)}</div>
                         </div>
                     </div>
                 );
             };
 
-            const GroupedPersonList = ({ list, title, colorClass, icon: Icon }) => {
-                const grouped = list.reduce((acc, p) => {
-                    const unit = getPersonUnit(p);
-                    if (!acc[unit]) acc[unit] = [];
-                    acc[unit].push(p);
-                    return acc;
-                }, {});
-
-                const units = Object.keys(grouped).sort();
+            const GroupedPersonList = ({ list, emptyMessage, cols = "sm:grid-cols-2" }) => {
+                const unitsPresent = unitOrder.filter(unit => list.some(p => getPUnit(p) === unit));
+                
+                if (list.length === 0) return <p className="text-center text-forest-400 py-10 italic">{emptyMessage}</p>;
 
                 return (
-                    <div className="mb-8">
-                        <h3 className={`text-xl md:text-2xl font-black ${colorClass} mb-4 flex items-center gap-3 p-3 md:p-4 rounded-lg border-l-4 shadow-lg ${colorClass.includes('green') ? 'bg-green-950/30 border-green-50' : colorClass.includes('blue') ? 'bg-blue-950/30 border-blue-50' : 'bg-yellow-950/30 border-yellow-500'}`}>
-                            <Icon size={24} /> {title} ({list.length})
-                        </h3>
-                        {units.length === 0 ? (
-                            <p className="text-forest-500 italic p-4">Personel bulunamadı.</p>
-                        ) : (
-                            <div className="space-y-6">
-                                {units.map(unit => (
-                                    <div key={unit} className="bg-forest-900/10 p-3 rounded-lg border border-forest-800/30">
-                                        <div className="flex items-center gap-2 mb-3 border-b border-forest-700/50 pb-2">
-                                            <div className="w-1.5 h-4 bg-orange-500 rounded-full"></div>
-                                            <span className="text-sm font-black text-forest-100 uppercase tracking-widest">{unit}</span>
-                                            <span className="ml-auto bg-forest-800 text-forest-400 text-[10px] px-2 py-0.5 rounded-full">{grouped[unit].length}</span>
+                    <div className="space-y-6">
+                        {unitsPresent.map(unit => {
+                            const peopleInUnit = list.filter(p => getPUnit(p) === unit)
+                                .sort((a, b) => (a.rank || 999) - (b.rank || 999));
+                            
+                            return (
+                                <div key={unit} className="space-y-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-[10px] sm:text-xs font-black text-orange-500/80 uppercase tracking-[0.2em] whitespace-nowrap">
+                                            {unit}
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
-                                            {grouped[unit].map(p => <PersonItem key={p.id} p={p} />)}
-                                        </div>
+                                        <div className="h-px bg-forest-800 flex-1"></div>
+                                        <span className="text-[10px] font-bold text-forest-600 bg-forest-900/50 px-2 py-0.5 rounded-full">{peopleInUnit.length}</span>
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <div className={`grid grid-cols-1 ${cols} gap-2`}>
+                                        {peopleInUnit.map(p => <PersonItem key={p.id} p={p} />)}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 );
             };
 
-            if (type === 'MESAI') {
-                const mesaiList = personnel.filter(p => {
-                    const pStart = p.activeFrom || '2000-01-01';
-                    const pEnd = p.activeUntil || '2099-12-31';
-                    const isActiveToday = pStart <= today && pEnd >= today;
-                    if (!isActiveToday) return false;
 
-                    const r = attendance.find(a => a.personId === p.id && a.date === today);
-                    return (r?.status === AttendanceStatus.PRESENT) || (!r); 
+
+            if (type === 'MESAI') {
+                const mesaiList = filteredPersonnel.filter(p => {
+                    const resolved = resolvePersonStatus(p, today, attendance);
+                    return resolved?.status === AttendanceStatus.PRESENT;
                 }).sort((a, b) => (a.rank || 999) - (b.rank || 999));
 
-                const beklemeList = personnel.filter(p => {
-                    const pStart = p.activeFrom || '2000-01-01';
-                    const pEnd = p.activeUntil || '2099-12-31';
-                    const isActiveToday = pStart <= today && pEnd >= today;
-                    if (!isActiveToday) return false;
-
-                    const r = attendance.find(a => a.personId === p.id && a.date === today);
-                    return r?.status === AttendanceStatus.OTHER && r?.note?.toLocaleUpperCase('tr-TR').includes('BEKLEME');
+                const beklemeList = filteredPersonnel.filter(p => {
+                    const resolved = resolvePersonStatus(p, today, attendance);
+                    return resolved?.status === AttendanceStatus.OTHER && resolved?.note?.toLocaleUpperCase('tr-TR').includes('BEKLEME');
                 }).sort((a, b) => (a.rank || 999) - (b.rank || 999));
 
                 const filteredMesai = mesaiList.filter(p => !beklemeList.find(b => b.id === p.id));
 
                 return (
-                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-3 md:p-12 animate-fade-in backdrop-blur-xl">
-                        <div className="max-w-7xl mx-auto">
+                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-4 md:p-8 md:px-12 animate-fade-in backdrop-blur-xl flex flex-col">
+                        <div className="w-full">
                             <Header />
-                            <div className="space-y-6">
-                                <GroupedPersonList list={filteredMesai} title="MESAİDE OLANLAR" colorClass="text-green-400" icon={LucideIcons.CheckCircle} />
-                                <GroupedPersonList list={beklemeList} title="BEKLEME YAZILANLAR" colorClass="text-blue-400" icon={LucideIcons.Activity} />
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-12">
+                                <div>
+                                    <h3 className="text-xl sm:text-2xl font-black text-green-400 mb-4 sm:mb-6 flex items-center gap-3 bg-green-950/30 p-3 sm:p-4 rounded-lg border-l-4 border-green-500">
+                                        MESAİDE OLANLAR ({filteredMesai.length})
+                                    </h3>
+                                    <GroupedPersonList list={filteredMesai} emptyMessage="Mesaide personel bulunamadı." />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl sm:text-2xl font-black text-blue-400 mb-4 sm:mb-6 flex items-center gap-3 bg-blue-950/30 p-3 sm:p-4 rounded-lg border-l-4 border-blue-500">
+                                        BEKLEME YAZILANLAR ({beklemeList.length})
+                                    </h3>
+                                    <GroupedPersonList list={beklemeList} emptyMessage="Bekleme yazılan personel bulunamadı." />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2660,58 +2697,37 @@
             }
 
             if (type === 'GÖREV') {
-                const dutyRecs = attendance.filter(a => a.date === today && a.status === AttendanceStatus.DUTY);
-                const activeDutyPersonnel = personnel.filter(p => {
-                    const pStart = p.activeFrom || '2000-01-01';
-                    const pEnd = p.activeUntil || '2099-12-31';
-                    return pStart <= today && pEnd >= today;
+                const resolvedPersonnel = filteredPersonnel.map(p => {
+                    const resolved = resolvePersonStatus(p, today, attendance);
+                    return { p, resolved };
                 });
-                const dutyPersonnelIds = new Set(dutyRecs.map(r => r.personId));
-                const finalDutyPersonnel = activeDutyPersonnel.filter(p => dutyPersonnelIds.has(p.id));
-                const getRecordLocDisplay = (r) => {
-                    const baseLoc = r.dutyLocation || 'BELİRSİZ';
-                    return baseLoc.toLocaleUpperCase('tr-TR');
-                };
-                const locations = [...new Set(dutyRecs.filter(r => activeDutyPersonnel.some(p => p.id === r.personId)).map(r => getRecordLocDisplay(r)))].sort();
+
+                const dutyPeople = resolvedPersonnel.filter(item => item.resolved?.status === AttendanceStatus.DUTY);
+                const locations = [...new Set(dutyPeople.map(item => (item.resolved?.dutyLocation || 'BELİRSİZ').toLocaleUpperCase('tr-TR')))].sort();
 
                 return (
-                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-3 md:p-12 animate-fade-in backdrop-blur-xl">
-                        <div className="max-w-7xl mx-auto">
+                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-4 md:p-8 md:px-12 animate-fade-in backdrop-blur-xl flex flex-col">
+                        <div className="w-full">
                             <Header />
                             {locations.length === 0 ? (
-                                <div className="text-center py-10 bg-forest-900/20 rounded-3xl border border-dashed border-forest-700">
-                                    <LucideIcons.Search size={48} className="mx-auto text-forest-600 mb-4" />
-                                    <p className="text-forest-400 text-lg">Bugün görevde olan personel bulunamadı.</p>
+                                <div className="text-center py-10 sm:py-20 bg-forest-900/20 rounded-3xl border border-dashed border-forest-700">
+                                    <LucideIcons.Search size={64} className="mx-auto text-forest-600 mb-4" />
+                                    <p className="text-forest-400 text-lg sm:text-xl">Bugün görevde olan personel bulunamadı.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-10">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-12 pt-2 w-full">
                                     {locations.map(loc => {
-                                        const peopleInLoc = finalDutyPersonnel.filter(p => dutyRecs.some(r => r.personId === p.id && getRecordLocDisplay(r) === loc))
+                                        const peopleInLoc = dutyPeople
+                                            .filter(item => (item.resolved?.dutyLocation || 'BELİRSİZ').toLocaleUpperCase('tr-TR') === loc)
+                                            .map(item => item.p)
                                             .sort((a, b) => (a.rank || 999) - (b.rank || 999));
                                         
-                                        const grouped = peopleInLoc.reduce((acc, p) => {
-                                            const unit = getPersonUnit(p);
-                                            if (!acc[unit]) acc[unit] = [];
-                                            acc[unit].push(p);
-                                            return acc;
-                                        }, {});
-                                        const units = Object.keys(grouped).sort();
-
                                         return (
-                                            <div key={loc} className="bg-forest-900/20 p-4 md:p-6 rounded-2xl border border-forest-800/50 shadow-xl self-start">
-                                                <h3 className="text-lg md:text-xl font-black text-orange-400 mb-4 flex items-center gap-3 border-b border-orange-500/30 pb-2 uppercase tracking-tighter">
-                                                    <LucideIcons.MapPin size={20} /> {loc} <span className="ml-auto bg-orange-600/20 text-orange-400 text-xs px-2 py-0.5 rounded-full">{peopleInLoc.length}</span>
+                                            <div key={loc} className="bg-forest-900/40 p-4 sm:p-6 rounded-2xl border border-forest-700/50 shadow-2xl w-full h-fit hover:border-orange-500/30 transition-all duration-300">
+                                                <h3 className="text-lg sm:text-xl font-black text-orange-400 mb-4 sm:mb-6 flex items-center gap-3 border-b border-orange-500/30 pb-3 uppercase tracking-tighter sticky top-0 bg-forest-900/10 backdrop-blur-sm z-10">
+                                                    {loc} <span className="ml-auto bg-orange-600/20 text-orange-400 text-sm px-3 py-1 rounded-full">{peopleInLoc.length}</span>
                                                 </h3>
-                                                <div className="space-y-6">
-                                                   {units.map(unit => (
-                                                       <div key={unit}>
-                                                           <div className="text-[10px] font-black text-forest-500 uppercase tracking-[0.2em] mb-2 px-1 border-l-2 border-forest-700">{unit}</div>
-                                                           <div className="space-y-1">
-                                                               {grouped[unit].map(p => <PersonItem key={p.id} p={p} />)}
-                                                           </div>
-                                                       </div>
-                                                   ))}
-                                                </div>
+                                                <GroupedPersonList list={peopleInLoc} emptyMessage="Bu konumda personel bulunamadı." cols="grid-cols-1" />
                                             </div>
                                         );
                                     })}
@@ -2723,22 +2739,20 @@
             }
 
             if (type === 'FMİ') {
-                const fmiPeople = personnel.filter(p => {
-                    const pStart = p.activeFrom || '2000-01-01';
-                    const pEnd = p.activeUntil || '2099-12-31';
-                    const isActiveToday = pStart <= today && pEnd >= today;
-                    if (!isActiveToday) return false;
-
-                    const r = attendance.find(a => a.personId === p.id && a.date === today);
-                    return r?.status === AttendanceStatus.LEAVE && r?.leaveType === LeaveType.OVERTIME;
+                const fmiPeople = filteredPersonnel.filter(p => {
+                    const resolved = resolvePersonStatus(p, today, attendance);
+                    return resolved?.status === AttendanceStatus.LEAVE && resolved?.leaveType === LeaveType.OVERTIME;
                 }).sort((a, b) => (a.rank || 999) - (b.rank || 999));
 
                 return (
-                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-3 md:p-12 animate-fade-in backdrop-blur-xl">
-                        <div className="max-w-7xl mx-auto">
+                    <div className="fixed inset-0 bg-forest-950/98 z-[200] overflow-y-auto p-4 md:p-8 md:px-12 animate-fade-in backdrop-blur-xl flex flex-col">
+                        <div className="w-full">
                             <Header />
-                            <div className="max-w-4xl mx-auto">
-                                <GroupedPersonList list={fmiPeople} title="FAZLA MESAİ İZNİ (F.M.İ)" colorClass="text-yellow-400" icon={LucideIcons.CalendarDays} />
+                            <div className="max-w-4xl mx-auto w-full">
+                                <h3 className="text-xl md:text-3xl font-black text-yellow-400 mb-6 md:mb-8 flex items-center justify-center gap-4 bg-yellow-950/20 py-4 md:py-6 rounded-2xl border-2 border-yellow-500/30 shadow-2xl text-center px-4">
+                                    FAZLA MESAİ İZNİ (F.M.İ) <span className="bg-yellow-500 text-yellow-950 px-3 md:px-4 py-1 rounded-full text-base md:text-xl">{fmiPeople.length}</span>
+                                </h3>
+                                <GroupedPersonList list={fmiPeople} emptyMessage="Bugün fazla mesai izni kullanan personel bulunamadı." />
                             </div>
                         </div>
                     </div>
@@ -2800,6 +2814,14 @@
             const [unlockPassword, setUnlockPassword] = useState('');
             const [pendingAction, setPendingAction] = useState(null);
 
+            // External Overtime Sync
+            const [syncOvertimeCount, setSyncOvertimeCount] = useState(0);
+            const [syncOvertimeRecords, setSyncOvertimeRecords] = useState([]);
+            const [skippedRecordIds, setSkippedRecordIds] = useState(new Set());
+            const [showSyncModal, setShowSyncModal] = useState(false);
+            const [showSyncDetails, setShowSyncDetails] = useState(false);
+            const [isSyncing, setIsSyncing] = useState(false);
+
             // Data Load
             const loadDashboardData = useCallback(async () => {
                 const [ac, pl, [recs, syncedPl]] = await Promise.all([
@@ -2811,24 +2833,22 @@
                     ])
                 ]);
 
-                // DATA MIGRATION: Remove old combined unit
+                // DATA MIGRATION: Remove old combined unit and ensure new ones exist
                 let updatedAc = [...ac];
                 const oldUnitIndex = updatedAc.findIndex(a => a.model === 'TEKNİK EKİP VE DESTEK');
-                const teknikEkipIndex = updatedAc.findIndex(a => a.model === AircraftModel.TEKNIK_EKIP);
-                const yerDestekIndex = updatedAc.findIndex(a => a.model === AircraftModel.YER_DESTEK);
-                
                 let modified = false;
                 
                 if (oldUnitIndex !== -1) {
                     updatedAc.splice(oldUnitIndex, 1);
                     modified = true;
                 }
-                if (teknikEkipIndex !== -1) {
-                    updatedAc.splice(updatedAc.findIndex(a => a.model === AircraftModel.TEKNIK_EKIP), 1);
+                
+                if (!updatedAc.find(a => a.model === AircraftModel.TEKNIK_EKIP)) {
+                    updatedAc.push({ id: '24', tailNumber: 'MERKEZ', model: AircraftModel.TEKNIK_EKIP, category: AircraftCategory.TECHNICAL, city: 'Ankara' });
                     modified = true;
                 }
-                if (yerDestekIndex !== -1) {
-                    updatedAc.splice(updatedAc.findIndex(a => a.model === AircraftModel.YER_DESTEK), 1);
+                if (!updatedAc.find(a => a.model === AircraftModel.YER_DESTEK)) {
+                    updatedAc.push({ id: '25', tailNumber: 'DESTEK', model: AircraftModel.YER_DESTEK, category: AircraftCategory.GROUND, city: 'Ankara' });
                     modified = true;
                 }
 
@@ -2837,7 +2857,7 @@
                 }
 
                 setInv(updatedAc);
-                const uniqueModels = [...new Set(updatedAc.map(a => a.model))].filter(m => m && m.length > 1 && m !== 'e' && m !== AircraftModel.TEKNIK_EKIP && m !== AircraftModel.YER_DESTEK).sort();
+                const uniqueModels = [...new Set(updatedAc.map(a => a.model))].filter(m => m && m.length > 1 && m !== 'e').sort();
                 setModels(uniqueModels);
                 setAllPersonnel(syncedPl || pl);
                 setAllRecs(recs || []);
@@ -2918,29 +2938,88 @@
                 }
             }, []);
 
+            const handleUnitSelection = async (unit) => {
+                setSelModel(unit);
+                if (unit === AircraftModel.TEKNIK_EKIP || unit === AircraftModel.YER_DESTEK) {
+                    try {
+                        const res = await storageService.checkExternalOvertime();
+                        if (res && res.count > 0) {
+                            setSyncOvertimeCount(res.count);
+                            setSyncOvertimeRecords(res.records || []);
+                            setSkippedRecordIds(new Set());
+                            setShowSyncModal(true);
+                        }
+                    } catch (e) {
+                        console.warn("External sync check failed", e);
+                    }
+                }
+            };
+
             useEffect(() => {
-                setLoading(true);
-                storageService.preload()
-                    .then(() => loadDashboardData())
-                    .then(() => setLoading(false))
-                    .catch(e => {
-                        console.error(e);
-                        setLoading(false);
-                    });
+                const acLocal = localStorage.getItem('ogm_aircraft');
+                const plLocal = localStorage.getItem('ogm_personnel');
+                
+                if (acLocal && plLocal) {
+                    // Load cached data synchronously first so there is NO waiting delay!
+                    memoryCache.aircraft = localData.getAircraft();
+                    memoryCache.personnel = localData.getPersonnel();
+                    memoryCache.attendance = localData.getAttendance();
+                    memoryCache.loaded = true;
+                    
+                    loadDashboardData();
+                    setLoading(false); // Do not show the loader, because we have cache!
+                    
+                    // Fetch data silently in the background so that any new records are updated
+                    storageService.preload()
+                        .then(() => loadDashboardData())
+                        .catch(e => console.warn("Background preload silent fail", e));
+                } else {
+                    // First time loading - show the loader as there's no cached data
+                    setLoading(true);
+                    storageService.preload()
+                        .then(() => loadDashboardData())
+                        .then(() => setLoading(false))
+                        .catch(e => {
+                            console.error(e);
+                            setLoading(false);
+                        });
+                }
             }, [loadDashboardData]);
 
             const handleBackToDashboard = async () => {
-                setLoading(true);
+                setSelModel(null);
+                setIsOrderChanged(false);
                 try {
                     await storageService.refresh();
                     await loadDashboardData();
-                    setSelModel(null);
-                    setIsOrderChanged(false);
                 } catch (e) {
-                    alert("Veriler güncellenirken bir hata oluştu, lütfen sayfayı yenileyiniz.");
-                    console.error(e);
-                    setSelModel(null);
+                    console.warn("Background refresh silent fail", e);
+                }
+            };
+
+            const handleSyncOvertime = async () => {
+                setIsSyncing(true);
+                try {
+                    const recordsToSync = syncOvertimeRecords.filter(r => !skippedRecordIds.has(r.id));
+                    if (recordsToSync.length === 0) {
+                        setShowSyncModal(false);
+                        return;
+                    }
+                    // We need a specific call or internal logic to sync ONLY selective ones
+                    // Since komut.gs sync_external_overtime syncs ALL, I might need a new action or update the existing one
+                    // But for now, if they want to skip, let's just sync all and they can revert? 
+                    // No, better to update komut.gs to accept a list of IDs to sync.
+                    
+                    const res = await storageService.syncExternalOvertime(recordsToSync.map(r => r.id));
+                    alert(`${res.imported} adet veri başarıyla aktarıldı.`);
+                    setShowSyncModal(false);
+                    setLoading(true);
+                    await storageService.refresh();
+                    await loadDashboardData();
+                } catch (e) {
+                    alert("Aktarım sırasında hata oluştu: " + e.message);
                 } finally {
+                    setIsSyncing(false);
                     setLoading(false);
                 }
             };
@@ -3072,7 +3151,7 @@
                 const isWe = dObj.getDay() === 0 || dObj.getDay() === 6;
 
                 people.forEach(p => {
-                    const r = allRecs.find(x => x.personId === p.id && x.date === referenceDate);
+                    const r = allRecs.find(x => x.personId === p.id && x.date === referenceDate && x.status && x.status !== '');
                     
                     // Check for weekend inclusion history (look at Saturday record of this specific week)
                     let hasWeekendRecord = false;
@@ -3086,7 +3165,7 @@
                          satDate.setDate(current.getDate() + diffToSat);
                          const satStr = normalizeDate(satDate);
                          
-                         const satRec = allRecs.find(x => x.personId === p.id && x.date === satStr);
+                         const satRec = allRecs.find(x => x.personId === p.id && x.date === satStr && x.status && x.status !== '');
                          // If Saturday has a record that matches criteria
                          if (satRec) {
                              if (satRec.status === AttendanceStatus.DUTY) {
@@ -3098,7 +3177,7 @@
                          }
                     }
 
-                    if (r) {
+                    if (r && r.status && r.status !== '') {
                         next[p.id] = {
                             ...r,
                             leaveType: r.leaveType || LeaveType.DAILY,
@@ -3106,13 +3185,9 @@
                             includeWeekend: hasWeekendRecord
                         };
                     } else {
-                        const hist = allRecs.filter(x => x.personId === p.id && x.date < referenceDate).sort((a, b) => b.date.localeCompare(a.date))[0];
+                        const hist = allRecs.filter(x => x.personId === p.id && x.date < referenceDate && x.status && x.status !== '').sort((a, b) => b.date.localeCompare(a.date))[0];
                         if (isWe) {
-                            if (hist && hist.status === AttendanceStatus.DUTY) {
-                                next[p.id] = { status: hist.status, dutyLocation: hist.dutyLocation, dutyType: hist.dutyType || DutyType.PLANNED, includeWeekend: hasWeekendRecord };
-                            } else {
-                                next[p.id] = { status: AttendanceStatus.PRESENT };
-                            }
+                            next[p.id] = { status: undefined };
                         } else {
                             if (hist && referenceDate >= getTodayString()) {
                                 // KRİTİK DÜZELTME: İzin, Rapor gibi durumların sonsuza kadar taşınmasını engelle
@@ -3149,13 +3224,14 @@
                 const personsToSkip = new Set();
                 if (isWeeklyMode) {
                     people.forEach(p => {
-                        const recordsInRange = days.map(d => {
+                        const weekdayDays = days.filter(d => d.getDay() !== 0 && d.getDay() !== 6);
+                        const recordsInRange = weekdayDays.map(d => {
                             const checkDate = normalizeDate(d);
-                            return allRecs.find(r => r.personId === p.id && r.date === checkDate);
+                            return allRecs.find(r => r.personId === p.id && r.date === checkDate && r.status && r.status !== '');
                         }).filter(r => !!r);
 
                         if (recordsInRange.length > 0) {
-                            if (recordsInRange.length < days.length) {
+                            if (recordsInRange.length < weekdayDays.length) {
                                 personsToSkip.add(p.id); // Partial data -> Blurred
                             } else {
                                 const firstRec = recordsInRange[0];
@@ -3188,18 +3264,31 @@
                     people.forEach(p => {
                         if (personsToSkip.has(p.id)) return; // Skip blurred rows
 
-                        const s = att[p.id] || { status: AttendanceStatus.PRESENT };
+                        const s = att[p.id];
                         
-                        if (s?.status === undefined) {
-                            // If it's explicitly undefined (weekend reset), check if an existing record needs to be deleted
-                            const hasExisting = allRecs.some(r => r.personId === p.id && r.date === dStr);
-                            if (hasExisting) {
+                        if (s?.status === undefined || s?.status === '') {
+                            const existingRec = allRecs.find(r => r.personId === p.id && r.date === dStr);
+                            if (existingRec) {
                                 counter++;
                                 recs.push({
-                                    id: `DEL-${timestamp}-${counter}-${p.id}`,
-                                    date: dStr,
-                                    personId: p.id,
+                                    ...existingRec,
                                     status: '' // Empty status signals deletion to backend
+                                });
+                            }
+                            return;
+                        }
+
+                        if (!s?.status) return;
+
+                        // Background data cleanup: If weekend and weekly mode, skip saving unless explicitly included.
+                        // But if there's an existing record, we MUST clear it by sending status: ''
+                        if (isWeekend && isWeeklyMode && !s.includeWeekend) {
+                            const existingRec = allRecs.find(r => r.personId === p.id && r.date === dStr);
+                            if (existingRec) {
+                                counter++;
+                                recs.push({
+                                    ...existingRec,
+                                    status: '' // Reset to HT (Delete record)
                                 });
                             }
                             return;
@@ -3217,18 +3306,18 @@
                         if (isFriday) {
                              // If user is NOT selecting "Include Weekend", but there might be existing weekend records
                              // Or if status changed away from Duty/FMI
-                             // We should check and overwrite weekend with PRESENT (default reset)
+                             // We should check and remove them by sending empty status
                              
                              // Calculate Sat/Sun dates
                              const satDate = new Date(dateObj); satDate.setDate(satDate.getDate() + 1); const satStr = normalizeDate(satDate);
                              const sunDate = new Date(dateObj); sunDate.setDate(sunDate.getDate() + 2); const sunStr = normalizeDate(sunDate);
                              
-                             // Check if existing records have FMI or Planned Duty
-                             const existingSat = allRecs.find(r => r.personId === p.id && r.date === satStr);
-                             const existingSun = allRecs.find(r => r.personId === p.id && r.date === sunStr);
+                             // Check if existing records have ANY status
+                             const existingSat = allRecs.find(r => r.personId === p.id && r.date === satStr && r.status && r.status !== '');
+                             const existingSun = allRecs.find(r => r.personId === p.id && r.date === sunStr && r.status && r.status !== '');
                              
-                             const hasWeekendJunk = (existingSat && (existingSat.status === AttendanceStatus.DUTY || (existingSat.status === AttendanceStatus.LEAVE && existingSat.leaveType === LeaveType.OVERTIME))) ||
-                                                    (existingSun && (existingSun.status === AttendanceStatus.DUTY || (existingSun.status === AttendanceStatus.LEAVE && existingSun.leaveType === LeaveType.OVERTIME)));
+                             const hasWeekendJunk = (existingSat && existingSat.status && existingSat.status !== '') || 
+                                                    (existingSun && existingSun.status && existingSun.status !== '');
 
                              if (hasWeekendJunk && (!shouldIncludeWeekend || !s.includeWeekend)) {
                                  // Add cleanup records
@@ -3237,7 +3326,7 @@
                                     id: `${timestamp}-${counter}-cleanup-sat-${p.id}`,
                                     date: satStr,
                                     personId: p.id,
-                                    status: AttendanceStatus.PRESENT, // Reset to Present
+                                    status: '', // Reset to HT (Delete record)
                                     aircraftTypeSnapshot: selModel || undefined
                                  });
                                  counter++;
@@ -3245,7 +3334,7 @@
                                     id: `${timestamp}-${counter}-cleanup-sun-${p.id}`,
                                     date: sunStr,
                                     personId: p.id,
-                                    status: AttendanceStatus.PRESENT, // Reset to Present
+                                    status: '', // Reset to HT (Delete record)
                                     aircraftTypeSnapshot: selModel || undefined
                                  });
                              }
@@ -3345,6 +3434,7 @@
                         status, 
                         dutyType: status === AttendanceStatus.DUTY ? (prev[pid]?.dutyType || DutyType.PLANNED) : undefined,
                         dutyLocation: (status === AttendanceStatus.DUTY || status === AttendanceStatus.COURSE) ? (prev[pid]?.dutyLocation || '') : undefined,
+                        dutyLocationDetail: status === AttendanceStatus.DUTY ? (prev[pid]?.dutyLocationDetail || '') : undefined,
                         includeWeekend: status === AttendanceStatus.DUTY ? true : (prev[pid]?.includeWeekend || false),
                         note: status === AttendanceStatus.OTHER ? prev[pid]?.note : undefined,
                         leaveType: status === AttendanceStatus.LEAVE ? (prev[pid]?.leaveType || LeaveType.DAILY) : undefined
@@ -3406,7 +3496,7 @@
 
                 days.forEach(d => {
                     const dStr = normalizeDate(d);
-                    const r = allRecs.find(rec => rec.personId === person.id && rec.date === dStr);
+                    const r = allRecs.find(rec => rec.personId === person.id && rec.date === dStr && rec.status && rec.status !== '');
                     const isWe = d.getDay() === 0 || d.getDay() === 6;
 
                     if (r) {
@@ -3414,14 +3504,10 @@
                     } else {
                         const prevDate = new Date(d); prevDate.setDate(prevDate.getDate() - 1);
                         const prevStr = normalizeDate(prevDate);
-                        const prevRec = initialStates[prevStr] || allRecs.find(rec => rec.personId === person.id && rec.date === prevStr);
+                        const prevRec = initialStates[prevStr] || allRecs.find(rec => rec.personId === person.id && rec.date === prevStr && rec.status && rec.status !== '');
 
                         if (isWe) {
-                            if (prevRec && prevRec.status === AttendanceStatus.DUTY) {
-                                initialStates[dStr] = { ...prevRec, id: undefined };
-                            } else {
-                                initialStates[dStr] = { status: AttendanceStatus.PRESENT };
-                            }
+                            initialStates[dStr] = { status: undefined };
                         } else {
                             if (prevRec) initialStates[dStr] = { ...prevRec, id: undefined };
                             else initialStates[dStr] = { status: AttendanceStatus.PRESENT };
@@ -3464,6 +3550,7 @@
                             ...prev[dateStr],
                             status,
                             dutyLocation: (status === AttendanceStatus.DUTY || status === AttendanceStatus.COURSE) ? (prev[dateStr]?.dutyLocation || '') : undefined,
+                            dutyLocationDetail: status === AttendanceStatus.DUTY ? (prev[dateStr]?.dutyLocationDetail || '') : undefined,
                             dutyType: status === AttendanceStatus.DUTY ? (prev[dateStr]?.dutyType || DutyType.PLANNED) : undefined,
                             leaveType: status === AttendanceStatus.LEAVE ? (prev[dateStr]?.leaveType || LeaveType.DAILY) : undefined,
                             includeWeekend: status === AttendanceStatus.DUTY ? true : (prev[dateStr]?.includeWeekend || false),
@@ -3498,22 +3585,32 @@
                 
                 Object.keys(detailDays).forEach(dStr => {
                     const s = detailDays[dStr];
-                    if (s.status !== undefined) {
-                        counter++;
-                        recs.push({
-                            id: `${timestamp}-${counter}-${detailPerson.id}`,
-                            date: dStr,
-                            personId: detailPerson.id,
-                            status: s.status || '', // Empty status if reset
-                            dutyLocation: s.dutyLocation,
-                            dutyLocationDetail: s.dutyLocationDetail,
-                            leaveType: s.leaveType,
-                            note: s.note,
-                            dutyType: s.dutyType,
-                            includeWeekend: !!s.includeWeekend,
-                            aircraftTypeSnapshot: selModel || undefined
-                        });
+                    if (s.status === undefined || s.status === '') {
+                        const existingRec = allRecs.find(r => r.personId === detailPerson.id && r.date === dStr);
+                        if (existingRec) {
+                            counter++;
+                            recs.push({
+                                ...existingRec,
+                                status: '' 
+                            });
+                        }
+                        return;
                     }
+
+                    counter++;
+                    recs.push({
+                        id: `${timestamp}-${counter}-${detailPerson.id}`,
+                        date: dStr,
+                        personId: detailPerson.id,
+                        status: s.status,
+                        dutyLocation: s.dutyLocation,
+                        dutyLocationDetail: s.dutyLocationDetail,
+                        leaveType: s.leaveType,
+                        note: s.note,
+                        dutyType: s.dutyType,
+                        includeWeekend: !!s.includeWeekend,
+                        aircraftTypeSnapshot: selModel || undefined
+                    });
                 });
 
                 try {
@@ -3540,7 +3637,7 @@
                 try {
                     const freshRecs = storageService.getAttendanceSync();
                     const finalPersonnel = await storageService.getPersonnelSync();
-                    const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "İDARİ BİRİM"];
+                    const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ"];
                     const fUK = (p) => {
                         if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
                         if (p.unit && unitOrder.includes(p.unit)) return p.unit;
@@ -3550,7 +3647,9 @@
                         if (titleUpper.includes('B-360')) return "B-360";
                         if (titleUpper.includes('T-70')) return "T-70";
                         if (titleUpper.includes('AT-802')) return "AT-802";
-                        return "İDARİ BİRİM";
+                        if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
+                        if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(p.role)) return "YER DESTEK";
+                        return "İDARİ";
                     };
                     let targetP = [...finalPersonnel];
                     const startDateForFilter = isDaily ? getTodayString() : dates.start, endDateForFilter = isDaily ? getTodayString() : dates.end;
@@ -3678,7 +3777,7 @@
                         days.forEach(d => {
                             const dStr = normalizeDate(d), r = freshRecs.find(x => x.personId === p.id && x.date === dStr), isWe = d.getDay() === 0 || d.getDay() === 6;
                             if (!((p.activeUntil && dStr > p.activeUntil) || (p.activeFrom && dStr < p.activeFrom))) {
-                                if (r) {
+                                if (r && r.status) {
                                     if (r.status === AttendanceStatus.PRESENT) { if (isWe) s.ht++; else s.w++; }
                                     else if (r.status === AttendanceStatus.DUTY) { if ((r.dutyType || DutyType.PLANNED) === DutyType.UNPLANNED) s.gu++; else s.gp++; }
                                     else if (r.status === AttendanceStatus.COURSE) s.k++;
@@ -3729,7 +3828,7 @@
                     let lastUnit = null;
                     targetP.forEach((p, i) => {
                         const pUnitRaw = fUK(p);
-                        const pUnit = pUnitRaw;
+                        const pUnit = pUnitRaw.toLocaleUpperCase('tr-TR').includes('UÇAK') ? 'TEKNİK EKİP' : pUnitRaw;
                         if (pUnit !== lastUnit) {
                             html += `<tr><td colspan="${3 + days.length + activeCols.length + 1}" style="background-color: #228b22; color: white; font-weight: bold; text-align: left; border: 1px solid #000; padding: 5px;">${pUnit}</td></tr>`;
                             lastUnit = pUnit;
@@ -3745,15 +3844,10 @@
 
     if (p.activeUntil && dStr > p.activeUntil) ct = 'İ.K';
     else if (p.activeFrom && dStr < p.activeFrom) ct = 'P.YOK';
-    else if (r && r.status === AttendanceStatus.PRESENT) {
-        ct = 'X';
-    }
-    else if (r && r.status !== AttendanceStatus.PRESENT) {
+    else if (r && r.status && r.status !== AttendanceStatus.PRESENT) {
         if (r.status === AttendanceStatus.DUTY || r.status === AttendanceStatus.COURSE) {
-            const baseLoc = r.dutyLocation || (r.status === AttendanceStatus.COURSE ? 'KURS' : 'GÖREV');
-            ct = (r.dutyLocationDetail && r.dutyLocationDetail.trim())
-                ? `${baseLoc} (${r.dutyLocationDetail.trim()})`.toLocaleUpperCase('tr-TR')
-                : baseLoc.toLocaleUpperCase('tr-TR');
+            ct = (r.dutyLocation || (r.status === AttendanceStatus.COURSE ? 'KURS' : 'GÖREV'))
+                .toLocaleUpperCase('tr-TR');
         }
         else if (r.status === AttendanceStatus.OTHER) {
             ct = r.note ? r.note.toLocaleUpperCase('tr-TR') : '';
@@ -3765,7 +3859,7 @@
                : (r.status === AttendanceStatus.PUBLIC_HOLIDAY ? 'İ.İ.' : r.status)));
         }
     }
-                            html += `<td ${r && ![AttendanceStatus.PRESENT, AttendanceStatus.DUTY].includes(r.status) ? rbStyle : cStyle}>${ct}</td>`;
+                            html += `<td ${r && ![AttendanceStatus.PRESENT, AttendanceStatus.DUTY].includes(r.status) ? rbStyle : cStyle}>${(ct === 'MEVCUT' || ct === 'Mevcut') ? '' : ct}</td>`;
                         });
                         activeCols.forEach(col => html += `<td ${numStyle}>${fmt(s[col.key])}</td>`);
                         let totalActive = 0; days.forEach(d => { if (!(p.activeUntil && normalizeDate(d) > p.activeUntil) && !(p.activeFrom && normalizeDate(d) < p.activeFrom)) totalActive++; });
@@ -3777,11 +3871,11 @@
                     html += `<br/><table border="1" style="border-collapse: collapse;"><tr><td colspan="6" ${hStyle}>GAYRI MEVCUT BEYANLARI</td></tr><tr><td ${hStyle}>SIRA NO</td><td ${hStyle}>AD SOYAD</td><td ${hStyle}>BİRİM</td><td ${hStyle}>TÜR</td><td ${hStyle}>TARİHLER</td><td ${hStyle}>GÜN SAYISI</td></tr>`;
                     beyanList.forEach((b, idx) => {
                         const fd = (s) => `${s.split('-')[2]}-${s.split('-')[1]}-${s.split('-')[0]}`;
-                        const displayUnit = b.birim;
+                        const displayUnit = b.birim.toLocaleUpperCase('tr-TR').includes('UÇAK') ? 'TEKNİK EKİP' : b.birim;
                         html += `<tr><td ${seqStyle}>${Number(idx + 1)}</td><td ${nStyle}>${b.ad}</td><td ${cStyle}>${displayUnit}</td><td ${rbStyle}>${b.tur}</td><td ${cStyle}>${fd(b.start)} / ${fd(b.end)}</td><td ${numStyle}>${fmt(b.gun)}</td></tr>`;
                     });
                     html += `</table><br/><table border="1" style="border-collapse: collapse; width: 450px;"><tr><td colspan="2" ${hStyle}>KISALTMALAR VE AÇIKLAMALARI</td></tr>`;
-                    const abbrs = [["X", "MESAİ / HAZIR"], ["HT", "HAFTA TATİLİ"], ["PLANLI", "PLANLI GÖREV"], ["PLANSIZ", "PLANSIZ GÖREV"], ["G.İ", "GÜNLÜK İZİN"], ["F.M.İ", "FAZLA MESAİ İZNİ"], ["Yİ", "YILLIK İZİN"], ["M.İ", "MAZERET İZNİ"], ["Y.G.İ", "YARIM GÜN İZİN"], ["R", "RAPOR"], ["H", "HASTANE"], ["KURS", "KURS"], ["İ.İ.", "İDARİ İZİN"]];
+                    const abbrs = [["X", "MESAİ / HAZIR"], ["HT", "HAFTA TATİLİ"], ["PLANLI", "PLANLI GÖREV"], ["PLANSIZ", "PLANSIZ GÖREV"], ["G.İ", "GÜNLÜK İZİN"], ["F.M.İ", "FAZLA MESAİ İZNİ"], ["Yİ", "YILLIK İZİN"], ["M.İ", "MAZERET İZNİ"], ["Y.G.İ", "YARIM GÜN İZİN"], ["RAPOR", "RAPOR"], ["HASTANE", "HASTANE"], ["KURS", "KURS"], ["İDARİ İZİN", "İDARİ İZİN"]];
                     abbrs.forEach(a => html += `<tr><td ${cStyle}>${a[0]}</td><td ${nStyle} style="padding-left:10px;">${a[1]}</td></tr>`);
                     html += '</table></body></html>';
                     const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8' }));
@@ -3790,18 +3884,15 @@
             };
 
             const renderPersonRow = (p, i) => {
-                const s = att[p.id] || { status: AttendanceStatus.PRESENT };
+                const s = att[p.id] || {};
                 const isWeeklyMode = rangeStartDate !== rangeEndDate;
-                const isWeekend = (() => {
-                    if (isWeeklyMode) return false;
-                    const d = new Date(rangeStartDate + 'T12:00:00');
-                    return d.getDay() === 0 || d.getDay() === 6;
-                })();
-
                 let shouldBlur = false;
                 if (isWeeklyMode) {
-                    const dInR = getDaysInRange(rangeStartDate, rangeEndDate);
-                    const rInR = dInR.map(d => { const dStr = normalizeDate(d); return allRecs.find(r => r.personId === p.id && r.date === dStr); }).filter(r => !!r);
+                    const dInR = getDaysInRange(rangeStartDate, rangeEndDate).filter(d => d.getDay() !== 0 && d.getDay() !== 6);
+                    const rInR = dInR.map(d => { 
+                        const dStr = normalizeDate(d); 
+                        return allRecs.find(r => r.personId === p.id && r.date === dStr && r.status && r.status !== ''); 
+                    }).filter(r => !!r);
                     if (rInR.length > 0) { if (rInR.length < dInR.length) shouldBlur = true; else { const fR = rInR[0]; if (!rInR.every(r => r.status === fR.status && (r.dutyType || DutyType.PLANNED) === (fR.dutyType || DutyType.PLANNED) && r.dutyLocation === fR.dutyLocation && r.leaveType === fR.leaveType)) shouldBlur = true; } }
                 }
                 return (
@@ -3836,7 +3927,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <AttendanceControl personId={p.id} state={s} isWeeklyMode={isWeeklyMode} isWeekend={isWeekend} aircraftModel={selModel} onChangeStatus={handleStatusChangeWithAuth} onChangeDetail={handleDetailChangeWithAuth} allAttendance={allRecs} />
+                            <AttendanceControl 
+                                personId={p.id} 
+                                state={s} 
+                                isWeeklyMode={isWeeklyMode} 
+                                aircraftModel={selModel} 
+                                onChangeStatus={handleStatusChangeWithAuth} 
+                                onChangeDetail={handleDetailChangeWithAuth} 
+                                isWeekend={(() => {
+                                    const d = new Date(rangeStartDate + 'T12:00:00');
+                                    return d.getDay() === 0 || d.getDay() === 6;
+                                })()}
+                                allAttendance={allRecs}
+                            />
                         </div>
                         {shouldBlur && <div className="absolute inset-0 flex items-center justify-center"><Button onClick={() => openDetailModalWithAuth(p)}><Edit2 size={16} className="mr-2" /> Ayrıntıyı Gör ve Düzenle</Button></div>}
                     </div>
@@ -3857,11 +3960,11 @@
                     <h1 className="text-3xl font-bold text-white mb-4">Yoklama Takip</h1>
                     <Card title="Birim Seçiniz">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {models.map(m => {
+                            {models.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK').map(m => {
                                 const stat = dashboardStatus[m] || { pilotMissing: false, techMissing: false, groundMissing: false };
                                 const hasIssue = stat.pilotMissing || stat.techMissing || stat.groundMissing;
                                 return (
-                                <button key={m} onClick={() => setSelModel(m)} className={`p-6 rounded border-2 font-bold flex flex-col items-center transition-all group relative overflow-hidden ${!hasIssue ? 'bg-teal-600 border-teal-400 hover:bg-teal-500 text-white' : 'bg-forest-800 border-forest-600 hover:bg-forest-700 text-white'}`}>
+                                <button key={m} onClick={() => handleUnitSelection(m)} className={`p-6 rounded border-2 font-bold flex flex-col items-center transition-all group relative overflow-hidden ${!hasIssue ? 'bg-teal-600 border-teal-400 hover:bg-teal-500 text-white' : 'bg-forest-800 border-forest-600 hover:bg-forest-700 text-white'}`}>
                                     <ModelIcon category={inv.find(a => a.model === m)?.category} model={m} className="mb-2" /> {m}
                                     {stat.groundMissing && <span className="text-[10px] bg-red-600 px-2 py-0.5 rounded mt-2 animate-pulse w-full block">YOKLAMA GİRİLMEDİ</span>}
                                     {stat.pilotMissing && <span className="text-[10px] bg-orange-600 px-2 py-0.5 rounded mt-1 animate-pulse w-full block">PİLOT GİRİLMEDİ</span>}
@@ -3874,21 +3977,21 @@
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <button 
                             onClick={() => setReportModalType('MESAI')} 
-                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
+                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-3 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
                         >
                             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                             <span className="text-xl relative z-10 tracking-tight">MESAİ (GÜNLÜK)</span>
                         </button>
                         <button 
                             onClick={() => setReportModalType('FMİ')} 
-                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
+                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-3 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
                         >
                             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                             <span className="text-xl relative z-10 tracking-tight">FAZLA MESAİ (GÜNLÜK)</span>
                         </button>
                         <button 
                             onClick={() => setReportModalType('GÖREV')} 
-                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
+                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 rounded-2xl shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] flex flex-col items-center justify-center gap-3 transition-all active:scale-95 border-2 border-orange-400 group overflow-hidden relative"
                         >
                             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                             <span className="text-xl relative z-10 tracking-tight">GÖREV (GÜNLÜK)</span>
@@ -3902,7 +4005,7 @@
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                      <div>
                                         <label className="text-xs text-forest-400 block mb-1">Birim Seçimi</label>
-                                        <select className="w-full bg-forest-950 border border-forest-600 text-white rounded p-2 text-sm" value={reportUnit} onChange={(e) => setReportUnit(e.target.value)}><option value="TÜM BİRİMLER">TÜM BİRİMLER</option>{models.map(m => <option key={m} value={m}>{m}</option>)}</select>
+                                        <select className="w-full bg-forest-950 border border-forest-600 text-white rounded p-2 text-sm" value={reportUnit} onChange={(e) => setReportUnit(e.target.value)}><option value="TÜM BİRİMLER">TÜM BİRİMLER</option><option value="YÖNETİM">YÖNETİM</option>{models.map(m => <option key={m} value={m}>{m}</option>)}</select>
                                      </div>
                                      <div>
                                         <label className="text-xs text-forest-400 block mb-1">Personel Arama</label>
@@ -3990,6 +4093,89 @@
                   
                     <div className="sticky bottom-0 bg-forest-950 p-4 border-t border-forest-700 flex justify-center mt-4"><Button size="lg" onClick={save} className="w-full max-w-md">KAYDET</Button></div>
                     <div className="h-20" />
+                    
+                    {showSyncModal && (
+                        <div className="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+                            <div className={`bg-forest-900 border border-forest-500 p-8 rounded-2xl ${showSyncDetails ? 'max-w-2xl' : 'max-w-md'} w-full shadow-2xl transition-all duration-300`}>
+                                <div className="text-center">
+                                    <div className="w-20 h-20 bg-forest-800 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-forest-400">
+                                        <LucideIcons.RefreshCw size={40} className={`text-forest-400 ${isSyncing ? 'animate-spin' : ''}`} />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">Fazla Mesai Aktarımı</h3>
+                                    <p className="text-forest-200 mb-6 leading-relaxed">
+                                        Fazla mesai sisteminde onaylanmış <span className="font-bold text-forest-400">{syncOvertimeCount}</span> adet veri bulundu. 
+                                        Bu veriler yoklama sistemine aktarılsın mı?
+                                    </p>
+                                </div>
+
+                                {showSyncDetails && (
+                                    <div className="bg-forest-950 border border-forest-800 rounded-lg p-4 mb-6 max-h-60 overflow-y-auto text-left">
+                                        <table className="w-full text-xs text-forest-200">
+                                            <thead className="border-b border-forest-800 text-forest-400 uppercase font-bold text-[10px]">
+                                                <tr>
+                                                    <th className="py-2 text-left w-8"></th>
+                                                    <th className="py-2 text-left">Personel</th>
+                                                    <th className="py-2 text-left">Tarih</th>
+                                                    <th className="py-2 text-left">Durum</th>
+                                                    <th className="py-2 text-left">Not</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {syncOvertimeRecords.map((r, idx) => {
+                                                    const person = allPersonnel.find(p => {
+                                                        const pid = String(p.id).toLowerCase().trim();
+                                                        const rid = String(r.personId).toLowerCase().trim();
+                                                        return pid === rid || (p.tcNo && String(p.tcNo).trim() === rid);
+                                                    });
+                                                    const isSkipped = skippedRecordIds.has(r.id);
+                                                    const displayName = person ? person.fullName : (r.personName || (r.personId ? `ID: ${r.personId}` : 'Bilinmeyen'));
+                                                    return (
+                                                        <tr key={idx} className={`border-b border-forest-900/50 hover:bg-forest-900/40 ${isSkipped ? 'opacity-40 grayscale' : ''}`}>
+                                                            <td className="py-2">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={!isSkipped} 
+                                                                    onChange={() => {
+                                                                        const newSkipped = new Set(skippedRecordIds);
+                                                                        if (isSkipped) newSkipped.delete(r.id);
+                                                                        else newSkipped.add(r.id);
+                                                                        setSkippedRecordIds(newSkipped);
+                                                                    }} 
+                                                                    className="w-4 h-4 rounded border-forest-600 bg-forest-800 text-forest-500 focus:ring-forest-500"
+                                                                />
+                                                            </td>
+                                                            <td className="py-2 font-medium text-white">{displayName}</td>
+                                                            <td className="py-2">{r.date ? new Date(r.date.replace(/-/g, '/')).toLocaleDateString('tr-TR') : '-'}</td>
+                                                            <td className="py-2 text-[11px] leading-tight text-forest-100">{r.status} {r.leaveType ? `(${r.leaveType})` : ''}</td>
+                                                            <td className="py-2 max-w-[120px] truncate">{r.note}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex gap-4">
+                                        <Button variant="secondary" onClick={() => setShowSyncModal(false)} className="flex-1" disabled={isSyncing}>
+                                            Daha Sonra
+                                        </Button>
+                                        <Button variant="primary" onClick={handleSyncOvertime} className="flex-1" disabled={isSyncing}>
+                                            {isSyncing ? 'Aktarılıyor...' : 'Evet, Aktar'}
+                                        </Button>
+                                    </div>
+                                    <button 
+                                        onClick={() => setShowSyncDetails(!showSyncDetails)}
+                                        className="text-xs text-forest-400 hover:text-white transition-colors underline underline-offset-4"
+                                    >
+                                        {showSyncDetails ? 'Detayları Gizle' : 'Detayları İncele'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {detailModalOpen && detailPerson && (
                         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-auto">
                             <div className="bg-forest-900 border border-forest-600 w-full max-w-4xl rounded-lg shadow-2xl flex flex-col max-h-[90vh]">
@@ -3997,8 +4183,24 @@
                                 <div className="p-4 overflow-y-auto flex-1 space-y-3">{Object.keys(detailDays).sort().map(dStr => {
                                     const dateObjArr = dStr.split('-').map(Number);
                                     const noonDate = new Date(dateObjArr[0], dateObjArr[1]-1, dateObjArr[2], 12,0,0);
-                                    const isWeekendInModal = noonDate.getDay() === 0 || noonDate.getDay() === 6;
-                                    return (<div key={dStr} className={`p-3 rounded border ${isWeekendInModal ? 'bg-forest-800/30 border-forest-700' : 'bg-forest-950/30 border-forest-800'} flex flex-col lg:flex-row items-center gap-4`}><div className="w-full lg:w-32 flex-shrink-0 text-center lg:text-left"><div className="font-bold text-white">{noonDate.toLocaleDateString('tr-TR')}</div><div className="text-xs text-forest-400 uppercase">{noonDate.toLocaleDateString('tr-TR', { weekday: 'long' })}</div></div><div className="flex-1 w-full"><AttendanceControl personId={dStr} state={detailDays[dStr]} isWeekend={isWeekendInModal} aircraftModel={detailPerson?.model} onChangeStatus={(id, s) => handleModalStatusChange(id, s)} onChangeDetail={(id, f, v) => handleModalDayChange(id, f, v)} allAttendance={allRecs} /></div></div>)
+                                    return (
+                                        <div key={dStr} className={`p-3 rounded border ${noonDate.getDay() === 0 || noonDate.getDay() === 6 ? 'bg-forest-800/30 border-forest-700' : 'bg-forest-950/30 border-forest-800'} flex flex-col lg:flex-row items-center gap-4`}>
+                                            <div className="w-full lg:w-32 flex-shrink-0 text-center lg:text-left">
+                                                <div className="font-bold text-white">{noonDate.toLocaleDateString('tr-TR')}</div>
+                                                <div className="text-xs text-forest-400 uppercase">{noonDate.toLocaleDateString('tr-TR', { weekday: 'long' })}</div>
+                                            </div>
+                                            <div className="flex-1 w-full">
+                                                <AttendanceControl 
+                                                    personId={dStr} 
+                                                    state={detailDays[dStr]} 
+                                                    onChangeStatus={(id, s) => handleModalStatusChange(id, s)} 
+                                                    onChangeDetail={(id, f, v) => handleModalDayChange(id, f, v)} 
+                                                    isWeekend={noonDate.getDay() === 0 || noonDate.getDay() === 6}
+                                                    allAttendance={allRecs}
+                                                />
+                                            </div>
+                                        </div>
+                                    )
                                 })}</div>
                                 <div className="p-4 border-t border-forest-700 bg-forest-950 flex justify-end gap-2"><Button variant="secondary" onClick={() => { setDetailModalOpen(false); setDetailPerson(null) }}>İptal</Button><Button onClick={saveModal}>Kaydet</Button></div>
                             </div>
@@ -4022,9 +4224,6 @@
             );
         };
 
-        const handleStatusChangeWithAuth = (pid, status) => {};
-        const handleDetailChangeWithAuth = (pid, field, value) => {};
-
         const Login = ({ onLogin }) => {
             const [u, setU] = useState(''); const [p, setP] = useState('');
             const handleSubmit = (e) => { e.preventDefault(); if (u === 'ogm' && p === '1839') onLogin(); };
@@ -4036,12 +4235,12 @@
             const [isAuthenticated, setIsAuthenticated] = useState(false);
             const [curtainOpen, setCurtainOpen] = useState(false);
             const [curtainHidden, setCurtainHidden] = useState(false);
-            useEffect(() => { const timer = setTimeout(() => { setCurtainOpen(true); setTimeout(() => setCurtainHidden(true), 1000); }, 2000); return () => clearTimeout(timer); }, []);
+            useEffect(() => { const timer = setTimeout(() => { setCurtainOpen(true); setTimeout(() => setCurtainHidden(true), 700); }, 1000); return () => clearTimeout(timer); }, []);
             const handleLoginSuccess = () => { setIsAuthenticated(true); setView('admin'); };
             const handleLogout = () => { setIsAuthenticated(false); setView('attendance'); };
             return (
                 <div className="min-h-screen pb-10">
-                    <div id="curtain" className={`fixed top-0 left-0 w-full h-full bg-forest-800 z-[9999] flex flex-col items-center justify-center transition-transform duration-1000 ease-in-out ${curtainOpen ? '-translate-y-full' : 'translate-y-0'} ${curtainHidden ? 'hidden' : ''}`}>
+                    <div id="curtain" className={`fixed top-0 left-0 w-full h-full bg-forest-800 z-[9999] flex flex-col items-center justify-center transition-transform duration-700 ease-in-out ${curtainOpen ? '-translate-y-full' : 'translate-y-0'} ${curtainHidden ? 'hidden' : ''}`}>
                         <div className="w-96 h-96 rounded-full overflow-hidden border-8 border-forest-400 shadow-[0_0_40px_rgba(0,0,0,0.6)] mb-8"><img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNW9uenhqZXdxbGd6YWNxc2UwempmOXNyaG15NGtuZTJmb3EyaTNqZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/1rrxPs1nb3IjwmbiXw/giphy.gif" className="w-full h-full object-cover" alt="Loading" /></div>
                         <h1 className="text-5xl md:text-6xl font-bold text-white tracking-wider text-center px-4">UÇUŞ İŞLETME VE EĞİTİM ŞUBE YOKLAMA</h1>
                     </div>
