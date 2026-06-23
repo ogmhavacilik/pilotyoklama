@@ -2555,31 +2555,20 @@
 
             const resolvePersonStatus = (p, dateStr, attendanceList) => {
                 const r = attendanceList.find(a => a.personId === p.id && a.date === dateStr && a.status && a.status !== '');
-                if (r) return r;
+                const validStatuses = Object.values(AttendanceStatus);
+                const hasValidStatus = r && r.status && validStatuses.includes(r.status);
+
+                if (hasValidStatus) {
+                    return r;
+                }
                 
                 const dObj = new Date(dateStr + 'T12:00:00');
                 const isWe = dObj.getDay() === 0 || dObj.getDay() === 6;
-                const hist = attendanceList
-                    .filter(x => x.personId === p.id && x.date < dateStr && x.status && x.status !== '')
-                    .sort((a, b) => b.date.localeCompare(a.date))[0];
                 
                 if (isWe) {
                     return { status: undefined };
                 } else {
-                    if (hist) {
-                        const carryOverStatuses = [AttendanceStatus.PRESENT, AttendanceStatus.DUTY];
-                        if (carryOverStatuses.includes(hist.status)) {
-                            return {
-                                ...hist,
-                                leaveType: hist.leaveType || LeaveType.DAILY,
-                                dutyType: hist.dutyType || DutyType.PLANNED
-                            };
-                        } else {
-                            return { status: AttendanceStatus.PRESENT };
-                        }
-                    } else {
-                        return { status: AttendanceStatus.PRESENT };
-                    }
+                    return { status: AttendanceStatus.PRESENT };
                 }
             };
             
@@ -3164,7 +3153,7 @@
                                 const isGroundTitle = titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('ŞÖFÖR');
                                 return isGroundRole || isGroundTitle;
                             } else if (selModel === AircraftModel.TEKNIK_EKIP) {
-                                if (p.fullName.includes('SERKAN KOTAN')) return false; // Force exclude SERKAN KOTAN
+                                if (p.fullName.includes('SERKAN KOTAN')) return false;
                                 if (belongsToSpecificAircraft) return false;
                                 return titleUpper.includes('UÇAK TEKNİ') || titleUpper.includes('MÜHENDİS');
                             } else if (selModel === AircraftModel.IDARI_BIRIM) {
@@ -3174,7 +3163,6 @@
                                 return tClean.includes(mNameNormalized);
                             }
                         });
-
                         if (searchName) {
                             targetP = targetP.filter(p => 
                                 p.fullName.toLocaleUpperCase('tr-TR').includes(searchName.toLocaleUpperCase('tr-TR'))
@@ -3194,7 +3182,8 @@
             useEffect(() => {
                 const next = {};
                 const referenceDate = rangeStartDate;
-                const dObj = new Date(referenceDate); 
+                const [refY, refM, refD] = referenceDate.split('-').map(Number);
+                const dObj = new Date(refY, refM - 1, refD, 12, 0, 0); 
                 const isWe = dObj.getDay() === 0 || dObj.getDay() === 6;
 
                 people.forEach(p => {
@@ -3216,15 +3205,18 @@
                          // If Saturday has a record that matches criteria
                          if (satRec) {
                              if (satRec.status === AttendanceStatus.DUTY) {
-                                 hasWeekendRecord = true;
+                                  hasWeekendRecord = true;
                              }
                              if (satRec.status === AttendanceStatus.LEAVE && satRec.leaveType === LeaveType.OVERTIME) {
-                                 hasWeekendRecord = true;
+                                  hasWeekendRecord = true;
                              }
                          }
                     }
 
-                    if (r && r.status && r.status !== '') {
+                    const validStatuses = Object.values(AttendanceStatus);
+                    const hasValidStatus = r && r.status && validStatuses.includes(r.status);
+
+                    if (hasValidStatus) {
                         next[p.id] = {
                             ...r,
                             leaveType: r.leaveType || LeaveType.DAILY,
@@ -3232,27 +3224,10 @@
                             includeWeekend: hasWeekendRecord
                         };
                     } else {
-                        const hist = allRecs.filter(x => x.personId === p.id && x.date < referenceDate && x.status && x.status !== '').sort((a, b) => b.date.localeCompare(a.date))[0];
                         if (isWe) {
                             next[p.id] = { status: undefined };
                         } else {
-                            if (hist && referenceDate >= getTodayString()) {
-                                // KRİTİK DÜZELTME: İzin, Rapor gibi durumların sonsuza kadar taşınmasını engelle
-                                const carryOverStatuses = [AttendanceStatus.PRESENT, AttendanceStatus.DUTY];
-                                if (carryOverStatuses.includes(hist.status)) {
-                                    next[p.id] = {
-                                        ...hist,
-                                        leaveType: hist.leaveType || LeaveType.DAILY,
-                                        dutyType: hist.dutyType || DutyType.PLANNED,
-                                        includeWeekend: hasWeekendRecord
-                                    };
-                                } else {
-                                    // İzin, Rapor, Kurs vb. durumlar bittiyse otomatik olarak Mesai'ye dön
-                                    next[p.id] = { status: AttendanceStatus.PRESENT, includeWeekend: hasWeekendRecord };
-                                }
-                            } else {
-                                next[p.id] = { status: AttendanceStatus.PRESENT, includeWeekend: hasWeekendRecord };
-                            }
+                            next[p.id] = { status: AttendanceStatus.PRESENT, includeWeekend: hasWeekendRecord };
                         }
                     }
                 });
@@ -3573,7 +3548,7 @@
                     };
 
                     // Auto-propagate Friday changes to Weekend if it's a duty
-                    const dObj = new Date(dateStr);
+                    const dObj = new Date(dateStr + 'T12:00:00');
                     if (dObj.getDay() === 5 && next[dateStr].status === AttendanceStatus.DUTY) {
                         const satDate = new Date(dObj); satDate.setDate(satDate.getDate() + 1); const satStr = normalizeDate(satDate);
                         const sunDate = new Date(dObj); sunDate.setDate(sunDate.getDate() + 2); const sunStr = normalizeDate(sunDate);
@@ -3606,7 +3581,7 @@
                     };
 
                     // Auto-propagate Friday Duty to Weekend
-                    const dObj = new Date(dateStr);
+                    const dObj = new Date(dateStr + 'T12:00:00');
                     if (dObj.getDay() === 5 && status === AttendanceStatus.DUTY) {
                         const satDate = new Date(dObj); satDate.setDate(satDate.getDate() + 1); const satStr = normalizeDate(satDate);
                         const sunDate = new Date(dObj); sunDate.setDate(sunDate.getDate() + 2); const sunStr = normalizeDate(sunDate);
