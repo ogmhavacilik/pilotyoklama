@@ -232,6 +232,10 @@
             const rawTitle = (title || role || '').toString();
             const t = rawTitle.toLocaleUpperCase('tr-TR');
             
+            if (t.includes('PİLOT') || t.includes('PILOT')) {
+                return 'Pilot';
+            }
+            
             // 1. Uçuş Teknisyeni Logic (Specific Aircraft Technicians)
             if (t.includes('AT-802') || 
                 t.includes('T-70') || 
@@ -3468,7 +3472,6 @@
                 setAtt(prev => ({ ...prev, [pid]: { ...prev[pid], [field]: value } }));
             };
 
-                
             // SECURITY WRAPPERS
             const handleUnlock = (e) => {
                 e.preventDefault();
@@ -3520,19 +3523,15 @@
                     const dStr = normalizeDate(d);
                     const r = allRecs.find(rec => rec.personId === person.id && rec.date === dStr && rec.status && rec.status !== '');
                     const isWe = d.getDay() === 0 || d.getDay() === 6;
+                    const validStatuses = Object.values(AttendanceStatus);
 
-                    if (r) {
+                    if (r && r.status && validStatuses.includes(r.status)) {
                         initialStates[dStr] = { ...r };
                     } else {
-                        const prevDate = new Date(d); prevDate.setDate(prevDate.getDate() - 1);
-                        const prevStr = normalizeDate(prevDate);
-                        const prevRec = initialStates[prevStr] || allRecs.find(rec => rec.personId === person.id && rec.date === prevStr && rec.status && rec.status !== '');
-
                         if (isWe) {
                             initialStates[dStr] = { status: undefined };
                         } else {
-                            if (prevRec) initialStates[dStr] = { ...prevRec, id: undefined };
-                            else initialStates[dStr] = { status: AttendanceStatus.PRESENT };
+                            initialStates[dStr] = { status: AttendanceStatus.PRESENT };
                         }
                     }
                 });
