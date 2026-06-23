@@ -181,79 +181,7 @@
             { id: '25', tailNumber: 'DESTEK', model: AircraftModel.YER_DESTEK, category: AircraftCategory.GROUND, city: 'Ankara' },
         ];
 
-        const INITIAL_PERSONNEL = [
-            { id: 'p1', rank: 1, fullName: 'MEHMET SEFA YÜCEDAĞ', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p2', rank: 2, fullName: 'ALİ ÖZKAVSAL', role: Role.TECHNICIAN, title: 'C-650 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p3', rank: 3, fullName: 'İLYAS ARAT', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p4', rank: 4, fullName: 'LEVENT ERDEM', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p5', rank: 5, fullName: 'MEHMET IŞIK', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p6', rank: 6, fullName: 'BAYRAM KORKMAZ', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p7', rank: 7, fullName: 'UTKU GÖKGÖZ', role: Role.TECHNICIAN, title: 'C-650 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p8', rank: 8, fullName: 'MUSTAFA GÜVEN', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p10', rank: 10, fullName: 'YILMAZ KARADENİZ', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p11', rank: 11, fullName: 'DURSUN ŞİMŞEK', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'Antalya', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' }, 
-            { id: 'p12', rank: 12, fullName: 'SERKAN BOZDAĞ', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p13', rank: 13, fullName: 'BARIŞ UZUN', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p14', rank: 14, fullName: 'SERKAN KEBAPCI', role: Role.TECHNICIAN, title: 'B-360 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p15', rank: 15, fullName: 'ÜMİT NAİLLİOĞLU', role: Role.TECHNICIAN, title: 'BELL-429 TEKNİSYEN', city: 'İzmir', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' }, 
-            { id: 'p16', rank: 16, fullName: 'ALPER ÖZMETİN', role: Role.TECHNICIAN, title: 'B-360 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p17', rank: 17, fullName: 'TEZCAN GÜZER', role: Role.TECHNICIAN, title: 'C-650 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' }, 
-            { id: 'p18', rank: 18, fullName: 'VELİ ERSOY', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p19', rank: 19, fullName: 'YUSUF BAŞPINAR', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p20', rank: 20, fullName: 'HASAN AKSOY', role: Role.TECHNICIAN, title: 'B-360 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p21', rank: 21, fullName: 'MUZAFFER SEMERCİ', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p22', rank: 22, fullName: 'OĞUZ TALAY', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p23', rank: 23, fullName: 'ÖNDER BİLGİN', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p24', rank: 24, fullName: 'MURAT GÜNDÜZ', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p25', rank: 25, fullName: 'GÖKHAN ÇETİNKAYA', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p26', rank: 26, fullName: 'OKAN AKÇA', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p27', rank: 27, fullName: 'FERHAT ÖZCAN', role: Role.TECHNICIAN, title: 'B-360 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p28', rank: 28, fullName: 'KEMAL CAN', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p29', rank: 29, fullName: 'ÖMER ERSOY', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p30', rank: 30, fullName: 'DOĞAN ÖZTÜRK', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p31', rank: 31, fullName: 'HACI İBRAHİM YALABUK', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p32', rank: 32, fullName: 'GÖKHAN KİRAZ', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p33', rank: 33, fullName: 'AYCAN TAN', role: Role.TECHNICIAN, title: 'B-360 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p35', rank: 35, fullName: 'HALİL AYGÖR', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p37', rank: 37, fullName: 'SERDAR TOY', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p38', rank: 38, fullName: 'ERSİN ÖNER', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p39', rank: 39, fullName: 'TAŞKIN ÇALIŞIR', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p40', rank: 40, fullName: 'FATİH YAŞBAY', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p41', rank: 41, fullName: 'ÖZGÜR UYAR', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p42', rank: 42, fullName: 'UĞUR GÜRCAN', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p43', rank: 43, fullName: 'URAL UÇURUM', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p44', rank: 44, fullName: 'YUNUS EROL', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p45', rank: 45, fullName: 'SELÇUK İBİŞ', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p46', rank: 46, fullName: 'ALİ TOPALAN', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p47', rank: 47, fullName: 'KÜRŞAT ALKAN', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p48', rank: 48, fullName: 'BAYKAN İSALAR', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p49', rank: 49, fullName: 'FATİH PARLAK', role: Role.TECHNICIAN, title: 'AT-802 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p50', rank: 50, fullName: 'ABDURRAHİM DEMİR', role: Role.TECHNICIAN, title: 'T-70 TEKNİSYEN', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p51', rank: 51, fullName: 'M.SERKAN KOTAN', role: Role.TECHNICIAN, title: 'MÜHENDİS', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p52', rank: 52, fullName: 'GÖKTÜRK AKBUDAK', role: Role.TECHNICIAN, title: 'UÇAK TEKNİKERİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p53', rank: 53, fullName: 'ESİN GÜNGÖR', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p54', rank: 54, fullName: 'DİLARA USLU', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p55', rank: 55, fullName: 'ZEKERİYA EVİRGEN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p56', rank: 56, fullName: 'M.ZAHİD DURSUN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p57', rank: 57, fullName: 'ŞÜKRAN BAYER', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p58', rank: 58, fullName: 'MUSTAFA ÖZKAN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p59', rank: 59, fullName: 'ALKAN BALTACI', role: Role.TECHNICIAN, title: 'UÇAK TEKNİKERİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p60', rank: 60, fullName: 'MAHİR YILMAZ', role: Role.TECHNICIAN, title: 'UÇAK TEKNİKERİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p61', rank: 61, fullName: 'FATİH ÇAMUR', role: Role.TECHNICIAN, title: 'UÇAK TEKNİKERİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p62', rank: 62, fullName: 'EGE ERAKAY', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p63', rank: 63, fullName: 'YİĞİTHAN SARIHAN', role: Role.OTHER, title: 'DESTEK MEMUR', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p64', rank: 64, fullName: 'ABDULLAH YAPICI', role: Role.OTHER, title: 'DESTEK MEMUR', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p65', rank: 65, fullName: 'MUHAMMET DİLCİ', role: Role.DRIVER, title: 'DESTEK MEMUR(ŞÖFÖR)', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p66', rank: 66, fullName: 'YASİN DOĞAN', role: Role.DRIVER, title: 'DESTEK MEMUR(ŞÖFÖR)', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p67', rank: 67, fullName: 'RIDVAN ŞATIR', role: Role.DRIVER, title: 'DESTEK MEMUR(ŞÖFÖR)', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p68', rank: 68, fullName: 'BEYHAN SAYGIN', role: Role.CLEANING, title: 'İŞÇİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p69', rank: 69, fullName: 'NAZMİYE DEDE', role: Role.CLEANING, title: 'İŞÇİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p70', rank: 70, fullName: 'BEKİR EKİNCİ', role: Role.CLEANING, title: 'İŞÇİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p71', rank: 71, fullName: 'ENES KAHYAOĞLU', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p72', rank: 72, fullName: 'KEREM DELİCE', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p73', rank: 73, fullName: 'MUHAMMED FATİH ŞAHİN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-            { id: 'p74', rank: 74, fullName: 'EREN KAPLAN', role: Role.TECHNICIAN, title: 'UÇAK TEKNİSYENİ', city: 'Ankara', activeFrom: DEFAULT_START_DATE, photoUrl: '', tcNo: '' },
-        ];
+        const INITIAL_PERSONNEL = [];
 
         // --- UTILS ---
         const fixDriveUrl = (url) => {
@@ -299,43 +227,6 @@
             return '';
         };
 
-        const normalizeStatus = (s) => {
-            if (!s || typeof s !== 'string') return s;
-            const cleaned = s.trim();
-            const lower = cleaned.toLowerCase();
-            const upper = cleaned.toUpperCase();
-            
-            // Standardizing 'İzinli' to AttendanceStatus.LEAVE ('İzin')
-            if (cleaned === 'İzinli' || lower === 'izinli' || upper === 'İZİNLİ') {
-                return AttendanceStatus.LEAVE;
-            }
-
-            // Standardizing PRESENT variations
-            const isPresent = (
-                cleaned === 'X' || 
-                cleaned === 'x' || 
-                lower === 'x' || 
-                lower === 'mesai' || 
-                lower === 'mesaide' || 
-                lower === 'mevcut' || 
-                upper === 'MESAİ' || 
-                upper === 'MESAİDE' || 
-                upper === 'MEVCUT' ||
-                cleaned === 'Mevcut' ||
-                cleaned === 'mevcut' ||
-                cleaned === 'MEVCUT' ||
-                cleaned === 'MESAİ' ||
-                cleaned === 'Mesaide' ||
-                cleaned === 'mesaide'
-            );
-            
-            if (isPresent) {
-                return AttendanceStatus.PRESENT;
-            }
-            
-            return cleaned;
-        };
-
         const getDisplayTitle = (title, role) => {
             if (!title && !role) return '';
             const rawTitle = (title || role || '').toString();
@@ -360,19 +251,56 @@
             return rawTitle;
         };
 
+        const normalizeToIdariBirim = (str) => {
+            if (!str) return str;
+            const upper = String(str).trim().toLocaleUpperCase('tr-TR');
+            if (upper === 'İDARİ' || upper === 'İDARI' || upper === 'IDARİ' || upper === 'IDARI' || upper === 'İDARI BIRIM' || upper === 'IDARI BIRIM' || upper === 'İDARİ BİRİM') {
+                return 'İDARİ BİRİM';
+            }
+            return str;
+        };
+
         const localData = {
-            getAircraft: () => JSON.parse(localStorage.getItem('ogm_aircraft') || JSON.stringify(INITIAL_AIRCRAFT)),
+            getAircraft: () => {
+                const arr = JSON.parse(localStorage.getItem('ogm_aircraft') || JSON.stringify(INITIAL_AIRCRAFT));
+                const seen = new Set();
+                const uniqueArr = [];
+                for (const a of arr) {
+                    let mName = normalizeToIdariBirim(a.model);
+                    const key = `${a.tailNumber}-${mName}`;
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    uniqueArr.push({ ...a, model: mName });
+                }
+                return uniqueArr;
+            },
             saveAircraft: (d) => localStorage.setItem('ogm_aircraft', JSON.stringify(d)),
-            getPersonnel: () => JSON.parse(localStorage.getItem('ogm_personnel') || JSON.stringify(INITIAL_PERSONNEL)),
+            getPersonnel: () => {
+                const raw = JSON.parse(localStorage.getItem('ogm_personnel') || JSON.stringify(INITIAL_PERSONNEL));
+                const seen = new Set();
+                const uniqueRaw = [];
+                for (const p of raw) {
+                    if (p.id === 'p_sukran') continue;
+                    const normName = (p.fullName || '').trim().toLocaleUpperCase('tr-TR');
+                    if (seen.has(normName)) continue;
+                    seen.add(normName);
+                    uniqueRaw.push(p);
+                }
+                return uniqueRaw.map(p => {
+                    let pUnit = normalizeToIdariBirim(p.unit);
+                    return { ...p, unit: pUnit };
+                }).filter(p => {
+                    const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
+                    const roleUpper = (p.role || '').toLocaleUpperCase('tr-TR');
+                    const nameUpper = (p.fullName || '').toLocaleUpperCase('tr-TR');
+                    const isPilot = roleUpper.includes('PILOT') || roleUpper.includes('PİLOT') || titleUpper.includes('PILOT') || titleUpper.includes('PİLOT');
+                    const isSukran = nameUpper.includes('ŞÜKRAN AKKAN');
+                    return isPilot || isSukran;
+                });
+            },
             savePersonnel: (d) => localStorage.setItem('ogm_personnel', JSON.stringify(d)),
-            getAttendance: () => {
-                const arr = JSON.parse(localStorage.getItem('ogm_attendance') || '[]');
-                return arr.map(r => ({ ...r, status: normalizeStatus(r.status) }));
-            },
-            setAttendance: (data) => {
-                const normalized = (data || []).map(r => ({ ...r, status: normalizeStatus(r.status) }));
-                localStorage.setItem('ogm_attendance', JSON.stringify(normalized));
-            },
+            getAttendance: () => JSON.parse(localStorage.getItem('ogm_attendance') || '[]'),
+            setAttendance: (data) => localStorage.setItem('ogm_attendance', JSON.stringify(data)),
             saveAttendance: (newRecords) => {
                 const existing = localData.getAttendance();
                 const others = existing.filter(e => !newRecords.some(n => n.personId === e.personId && n.date === e.date));
@@ -417,7 +345,10 @@
                 try {
                     const data = await apiCall('get_init_data');
                     if (data.aircraft) {
-                        const formattedAC = data.aircraft.map(a => ({ ...a, id: String(a.id) }));
+                        const formattedAC = data.aircraft.map(a => {
+                            let mName = normalizeToIdariBirim(a.model);
+                            return { ...a, id: String(a.id), model: mName };
+                        });
                         localData.saveAircraft(formattedAC);
                         memoryCache.aircraft = formattedAC;
                     }
@@ -438,9 +369,12 @@
                                 if (altKey) foundTc = String(p[altKey]);
                             }
 
+                            let pUnit = normalizeToIdariBirim(p.unit);
+
                             return { 
                                 ...p, 
                                 id: String(p.id), 
+                                unit: pUnit,
                                 photoUrl: fixDriveUrl(p.photoUrl),
                                 tcNo: foundTc || ''
                             };
@@ -449,6 +383,15 @@
                             if (!formattedPL.some(p => p.id === initP.id)) {
                                 formattedPL.push(initP);
                             }
+                        });
+                        formattedPL = formattedPL.filter(p => {
+                            if (p.id === 'p_sukran') return false;
+                            const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
+                            const roleUpper = (p.role || '').toLocaleUpperCase('tr-TR');
+                            const nameUpper = (p.fullName || '').toLocaleUpperCase('tr-TR');
+                            const isPilot = roleUpper.includes('PILOT') || roleUpper.includes('PİLOT') || titleUpper.includes('PILOT') || titleUpper.includes('PİLOT');
+                            const isSukran = nameUpper.includes('ŞÜKRAN AKKAN');
+                            return isPilot || isSukran;
                         });
                         formattedPL.sort((a, b) => (a.rank || 999) - (b.rank || 999));
                         localData.savePersonnel(formattedPL);
@@ -461,7 +404,7 @@
                         id: String(r.id),
                         personId: String(r.personId),
                         date: normalizeDate(r.date),
-                        status: normalizeStatus(r.status)
+                        status: r.status === 'İzinli' ? 'İzin' : r.status
                     })).filter(r => r.status && r.status !== '');
 
                     localData.setAttendance(formattedAtt);
@@ -597,10 +540,7 @@
 
         // AttendanceControl Component
         const AttendanceControl = ({ personId, state, isWeeklyMode, onChangeStatus, onChangeDetail, isWeekend, allAttendance = [] }) => {
-            let status = normalizeStatus(state?.status);
-            if (!status) {
-                status = isWeekend ? undefined : AttendanceStatus.PRESENT;
-            }
+            const status = state?.status;
 
             const handleStatusClick = (newStatus) => {
                 if (isWeekend && status === newStatus) {
@@ -1000,10 +940,9 @@
             };
 
             const uniqueModels = useMemo(() => {
-                const models = [...new Set(acList.map(a => a.model))].filter(m => m && m.length > 1);
-                // Add YÖNETİM and İDARİ BİRİM manually if not in list
+                const models = [...new Set(acList.map(a => normalizeToIdariBirim(a.model)))].filter(m => m && m.length > 1 && m !== 'İDARİ' && m !== 'İDARI');
+                // Add YÖNETİM manually if not in list
                 if (!models.includes('YÖNETİM')) models.push('YÖNETİM');
-                if (!models.includes('İDARİ BİRİM')) models.push('İDARİ BİRİM');
                 return models.sort();
             }, [acList]);
 
@@ -1227,48 +1166,17 @@
                 return Array.from(cities).sort();
             }, [allAttendance]);
 
-            const isPersonInUnit = (p, selModel) => {
-                if (YONETIM_NAMES.includes(p.fullName)) return false;
-
-                const targetModel = (selModel === 'İDARİ' || selModel === 'İDARİ BİRİM') ? AircraftModel.IDARI_BIRIM : selModel;
-
-                // 1. PRIORITIZE EXPLICIT UNIT ASSIGNMENT
-                if (p.unit) {
-                    const pUnitNormalized = (p.unit === 'İDARİ' || p.unit === 'İDARİ BİRİM') ? AircraftModel.IDARI_BIRIM : p.unit;
-                    return pUnitNormalized === targetModel;
-                }
-
-                // 2. FALLBACK TO TITLE/ROLE MATCHING
-                const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
-                const role = p.role;
-                const tClean = titleUpper.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ]/g, '');
-
-                const specificAircraftTags = uniqueModels
-                    .filter(m => m !== AircraftModel.YER_DESTEK && m !== AircraftModel.TEKNIK_EKIP && m !== AircraftModel.IDARI_BIRIM)
-                    .map(m => m.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ]/g, '').toLocaleUpperCase('tr-TR'));
-
-                const belongsToSpecificAircraft = specificAircraftTags.some(tag => tClean.includes(tag));
-
-                if (targetModel === AircraftModel.YER_DESTEK) {
-                    if (p.fullName.includes('SERKAN KOTAN')) return true;
-                    if (belongsToSpecificAircraft) return false;
-                    
-                    const isTechnicalRole = titleUpper.includes('UÇAK TEKNİ') || titleUpper.includes('MÜHENDİS');
-                    if (isTechnicalRole) return false;
-
-                    const isGroundRole = [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(role);
-                    const isGroundTitle = titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('ŞÖFÖR');
-                    return isGroundRole || isGroundTitle;
-                } else if (targetModel === AircraftModel.TEKNIK_EKIP) {
-                    if (p.fullName.includes('SERKAN KOTAN')) return false;
-                    if (belongsToSpecificAircraft) return false;
-                    return titleUpper.includes('UÇAK TEKNİ') || titleUpper.includes('MÜHENDİS');
-                } else if (targetModel === AircraftModel.IDARI_BIRIM) {
-                    return (titleUpper === 'MEMUR' || titleUpper.includes('İDARİ')) && !belongsToSpecificAircraft;
-                } else {
-                    const mNameNormalized = targetModel.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ]/g, '').toLocaleUpperCase('tr-TR');
-                    return tClean.includes(mNameNormalized);
-                }
+            const getHarcirahCategory = (p) => {
+                const title = (p.title || '').toLocaleUpperCase('tr-TR');
+                const unit = (p.unit || '').toLocaleUpperCase('tr-TR');
+                
+                if (title.includes('AT-802') || unit.includes('AT-802')) return 'AT-802';
+                if (title.includes('BELL-429') || unit.includes('BELL-429')) return 'BELL-429';
+                if (title.includes('C-650') || unit.includes('C-650')) return 'C-650';
+                if (title.includes('B-360') || unit.includes('B-360')) return 'B-360';
+                if (title.includes('T-70') || unit.includes('T-70')) return 'T-70';
+                
+                return 'İDARİ BİRİM';
             };
 
             const handleHarcirahCitySelect = (city) => {
@@ -1293,7 +1201,7 @@
             const availableHarcirahRanges = useMemo(() => {
                 if (!selectedHarcirahCity || !selectedHarcirahUnit) return [];
                 
-                const unitPersonIds = new Set(plList.filter(p => isPersonInUnit(p, selectedHarcirahUnit)).map(p => p.id));
+                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
                 const monthKeys = new Set();
                 
                 // Group each person's duties into blocks and determine their majority month
@@ -1348,7 +1256,7 @@
 
             const getMonthSubBlocks = useCallback((monthKey) => {
                 if (!selectedHarcirahCity || !selectedHarcirahUnit) return [];
-                const unitPersonIds = new Set(plList.filter(p => isPersonInUnit(p, selectedHarcirahUnit)).map(p => p.id));
+                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
                 const allUnitDutyDates = allAttendance.filter(r => 
                     unitPersonIds.has(r.personId) && 
                     r.status === AttendanceStatus.DUTY &&
@@ -1387,7 +1295,7 @@
             const handleHarcirahRangeSelect = (range) => {
                 setSelectedHarcirahRange(range);
                 
-                const unitPersonIds = new Set(plList.filter(p => isPersonInUnit(p, selectedHarcirahUnit)).map(p => p.id));
+                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
                 
                 // Find personnel who had a block with majority month equal to range.monthKey
                 const personIdsInRange = new Set();
@@ -1405,7 +1313,7 @@
                     }
                 });
 
-                const eligible = plList.filter(p => personIdsInRange.has(p.id) && isPersonInUnit(p, selectedHarcirahUnit));
+                const eligible = plList.filter(p => personIdsInRange.has(p.id) && getHarcirahCategory(p) === selectedHarcirahUnit);
                 setHarcirahPersonnel(eligible);
                 
                 // Initialize selected dates for each person
@@ -1638,26 +1546,26 @@
             // 3️⃣ & 4️⃣ Resimli Excel Raporu (Gördüğünü Al WYSIWYG Flow)
             const exportPersonnelExcel = async () => {
                 const getPUnit = (pers) => {
+                    const nameUpper = (pers.fullName || '').toLocaleUpperCase('tr-TR');
+                    if (nameUpper.includes('ŞÜKRAN AKKAN')) return "İDARİ BİRİM";
                     if (YONETIM_NAMES.includes(pers.fullName)) return "YÖNETİM";
-                    if (pers.unit && (pers.unit === "İDARİ" || pers.unit === "İDARİ BİRİM" || unitOrder.includes(pers.unit))) {
-                        return (pers.unit === "İDARİ" || pers.unit === "İDARİ BİRİM") ? "İDARİ BİRİM" : pers.unit;
-                    }
+                    const pUnit = normalizeToIdariBirim(pers.unit);
+                    if (pUnit && ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"].includes(pUnit)) return pUnit;
                     const titleUpper = (pers.title || '').toLocaleUpperCase('tr-TR');
                     if (titleUpper.includes('BELL')) return "BELL-429";
                     if (titleUpper.includes('C-650')) return "C-650";
                     if (titleUpper.includes('B-360')) return "B-360";
                     if (titleUpper.includes('T-70')) return "T-70";
                     if (titleUpper.includes('AT-802')) return "AT-802";
-                    if (titleUpper.includes('İDARİ') || titleUpper === 'MEMUR') return "İDARİ BİRİM";
                     if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
                     if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(pers.role)) return "YER DESTEK";
                     return "İDARİ BİRİM";
                 };
 
-                const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"];
+                const unitOrder = ["BELL-429", "C-650", "B-360", "T-70", "AT-802", "İDARİ BİRİM"];
                 
                 const activePersonnel = plList
-                    .filter(p => !p.activeUntil)
+                    .filter(p => !p.activeUntil && getPUnit(p) !== "YÖNETİM" && getPUnit(p) !== "TEKNİK EKİP" && getPUnit(p) !== "YER DESTEK")
                     .sort((a, b) => {
                         const unitA = getPUnit(a);
                         const unitB = getPUnit(b);
@@ -2004,7 +1912,7 @@
                                                 <div className="space-y-2 animate-slide-down">
                                                     <label className="text-xs font-bold text-forest-400 uppercase">2. Birim Seçiniz</label>
                                                     <div className="space-y-2">
-                                                        {uniqueModels.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK' && m !== 'YÖNETİM').map(cat => (
+                                                        {['BELL-429', 'C-650', 'B-360', 'T-70', 'AT-802', 'İDARİ BİRİM'].map(cat => (
                                                             <button 
                                                                 key={cat} 
                                                                 onClick={() => handleHarcirahUnitSelect(cat)}
@@ -2167,8 +2075,11 @@
                                                                             onClick={(e) => { 
                                                                                 e.stopPropagation(); 
                                                                                 const personUnit = (pers) => {
+                                                                                    const nameUpper = (pers.fullName || '').toLocaleUpperCase('tr-TR');
+                                                                                    if (nameUpper.includes('ŞÜKRAN AKKAN')) return "İDARİ BİRİM";
                                                                                     if (YONETIM_NAMES.includes(pers.fullName)) return "YÖNETİM";
-                                                                                    if (pers.unit) return pers.unit;
+                                                                                    const pUnit = normalizeToIdariBirim(pers.unit);
+                                                                                    if (pUnit && ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"].includes(pUnit)) return pUnit;
                                                                                     const titleUpper = (pers.title || '').toLocaleUpperCase('tr-TR');
                                                                                     if (titleUpper.includes('BELL')) return "BELL-429";
                                                                                     if (titleUpper.includes('C-650')) return "C-650";
@@ -2177,7 +2088,7 @@
                                                                                     if (titleUpper.includes('AT-802')) return "AT-802";
                                                                                     if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
                                                                                     if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(pers.role)) return "YER DESTEK";
-                                                                                    return "İDARİ";
+                                                                                    return "İDARİ BİRİM";
                                                                                 };
                                                                                 setFullAttendanceParams({ 
                                                                                     model: personUnit(p), 
@@ -2443,7 +2354,7 @@
                                         </thead>
                                         <tbody>
                                             {plList
-                                                .filter(p => isPersonInUnit(p, selectedHarcirahUnit))
+                                                .filter(p => getHarcirahCategory(p) === selectedHarcirahUnit)
                                                 .map(p => (
                                                     <tr key={p.id} className="hover:bg-forest-800/30 transition-colors">
                                                         <td className="p-2 border border-forest-700 font-medium sticky left-0 bg-forest-900 z-[5]">{p.fullName}</td>
@@ -2616,19 +2527,20 @@
             const todayObj = new Date(today + 'T12:00:00');
             const isTodayWeekend = todayObj.getDay() === 0 || todayObj.getDay() === 6;
 
-            const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"];
+            const unitOrder = ["BELL-429", "C-650", "B-360", "T-70", "AT-802", "İDARİ BİRİM"];
+            const allUnitsReference = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"];
             const getPUnit = (p) => {
+                const nameUpper = (p.fullName || '').toLocaleUpperCase('tr-TR');
+                if (nameUpper.includes('ŞÜKRAN AKKAN')) return "İDARİ BİRİM";
                 if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
-                if (p.unit && (p.unit === "İDARİ" || p.unit === "İDARİ BİRİM" || unitOrder.includes(p.unit))) {
-                    return (p.unit === "İDARİ" || p.unit === "İDARİ BİRİM") ? "İDARİ BİRİM" : p.unit;
-                }
+                const pUnit = normalizeToIdariBirim(p.unit);
+                if (pUnit && allUnitsReference.includes(pUnit)) return pUnit;
                 const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
                 if (titleUpper.includes('BELL')) return "BELL-429";
                 if (titleUpper.includes('C-650')) return "C-650";
                 if (titleUpper.includes('B-360')) return "B-360";
                 if (titleUpper.includes('T-70')) return "T-70";
                 if (titleUpper.includes('AT-802')) return "AT-802";
-                if (titleUpper.includes('İDARİ') || titleUpper === 'MEMUR') return "İDARİ BİRİM";
                 if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
                 if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(p.role)) return "YER DESTEK";
                 return "İDARİ BİRİM";
@@ -2637,15 +2549,13 @@
             const filteredPersonnel = personnel.filter(p => {
                 const isSeparated = p.activeUntil && today > p.activeUntil;
                 const unit = getPUnit(p);
-                const isExcluded = unit === "YER DESTEK" || unit === "TEKNİK EKİP" || unit === "YÖNETİM";
+                const isExcluded = unit === "YÖNETİM" || unit === "TEKNİK EKİP" || unit === "YER DESTEK";
                 return !isSeparated && !isExcluded;
             });
 
             const resolvePersonStatus = (p, dateStr, attendanceList) => {
                 const r = attendanceList.find(a => a.personId === p.id && a.date === dateStr && a.status && a.status !== '');
-                if (r) {
-                    return { ...r, status: normalizeStatus(r.status) };
-                }
+                if (r) return r;
                 
                 const dObj = new Date(dateStr + 'T12:00:00');
                 const isWe = dObj.getDay() === 0 || dObj.getDay() === 6;
@@ -2919,7 +2829,19 @@
                 ]);
 
                 // DATA MIGRATION: Remove old combined unit and ensure new ones exist
-                let updatedAc = [...ac];
+                let updatedAc = ac.map(a => ({ ...a, model: normalizeToIdariBirim(a.model) }));
+                
+                // Deduplicate by tailNumber + model
+                const uniqueAcList = [];
+                const seenAcs = new Set();
+                for (const a of updatedAc) {
+                    const key = `${a.tailNumber}-${a.model}`;
+                    if (seenAcs.has(key)) continue;
+                    seenAcs.add(key);
+                    uniqueAcList.push(a);
+                }
+                updatedAc = uniqueAcList;
+
                 const oldUnitIndex = updatedAc.findIndex(a => a.model === 'TEKNİK EKİP VE DESTEK');
                 let modified = false;
                 
@@ -2936,13 +2858,17 @@
                     updatedAc.push({ id: '25', tailNumber: 'DESTEK', model: AircraftModel.YER_DESTEK, category: AircraftCategory.GROUND, city: 'Ankara' });
                     modified = true;
                 }
+                if (!updatedAc.find(a => a.model === AircraftModel.IDARI_BIRIM)) {
+                    updatedAc.push({ id: '26', tailNumber: 'MERKEZ', model: AircraftModel.IDARI_BIRIM, category: AircraftCategory.TECHNICAL, city: 'Ankara' });
+                    modified = true;
+                }
 
                 if (modified) {
                     storageService.saveAircraft(updatedAc);
                 }
 
                 setInv(updatedAc);
-                const uniqueModels = [...new Set(updatedAc.map(a => a.model))].filter(m => m && m.length > 1 && m !== 'e').sort();
+                const uniqueModels = [...new Set(updatedAc.map(a => normalizeToIdariBirim(a.model)))].filter(m => m && m.length > 1 && m !== 'e' && m !== 'İDARİ' && m !== 'İDARI').sort();
                 setModels(uniqueModels);
                 setAllPersonnel(syncedPl || pl);
                 setAllRecs(recs || []);
@@ -3041,6 +2967,42 @@
             };
 
             useEffect(() => {
+                try {
+                    const acs = localStorage.getItem('ogm_aircraft');
+                    if (acs) {
+                        let parsed = JSON.parse(acs);
+                        let changed = false;
+                        parsed.forEach(a => {
+                            let oldModel = a.model;
+                            let newModel = normalizeToIdariBirim(oldModel);
+                            if (oldModel !== newModel) {
+                                a.model = newModel;
+                                changed = true;
+                            }
+                        });
+                        if (changed) localStorage.setItem('ogm_aircraft', JSON.stringify(parsed));
+                    }
+                    const pers = localStorage.getItem('ogm_personnel');
+                    if (pers) {
+                        let parsed = JSON.parse(pers);
+                        let changed = false;
+                        parsed.forEach(p => {
+                            if (p.id === 'p_sukran') {
+                                // Filter out later, but can mark or change
+                            }
+                            let oldUnit = p.unit;
+                            let newUnit = normalizeToIdariBirim(oldUnit);
+                            if (oldUnit !== newUnit) {
+                                p.unit = newUnit;
+                                changed = true;
+                            }
+                        });
+                        if (changed) localStorage.setItem('ogm_personnel', JSON.stringify(parsed));
+                    }
+                } catch (err) {
+                    console.warn("Migration error", err);
+                }
+
                 const acLocal = localStorage.getItem('ogm_aircraft');
                 const plLocal = localStorage.getItem('ogm_personnel');
                 
@@ -3722,19 +3684,20 @@
                 try {
                     const freshRecs = storageService.getAttendanceSync();
                     const finalPersonnel = await storageService.getPersonnelSync();
-                    const unitOrder = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"];
+                    const unitOrder = ["BELL-429", "C-650", "B-360", "T-70", "AT-802", "İDARİ BİRİM"];
+                    const allUnitsReference = ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"];
                     const fUK = (p) => {
+                        const nameUpper = (p.fullName || '').toLocaleUpperCase('tr-TR');
+                        if (nameUpper.includes('ŞÜKRAN AKKAN')) return "İDARİ BİRİM";
                         if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
-                        if (p.unit && (p.unit === "İDARİ" || p.unit === "İDARİ BİRİM" || unitOrder.includes(p.unit))) {
-                            return (p.unit === "İDARİ" || p.unit === "İDARİ BİRİM") ? "İDARİ BİRİM" : p.unit;
-                        }
+                        const pUnit = normalizeToIdariBirim(p.unit);
+                        if (pUnit && allUnitsReference.includes(pUnit)) return pUnit;
                         const titleUpper = (p.title || '').toLocaleUpperCase('tr-TR');
                         if (titleUpper.includes('BELL')) return "BELL-429";
                         if (titleUpper.includes('C-650')) return "C-650";
                         if (titleUpper.includes('B-360')) return "B-360";
                         if (titleUpper.includes('T-70')) return "T-70";
                         if (titleUpper.includes('AT-802')) return "AT-802";
-                        if (titleUpper.includes('İDARİ') || titleUpper === 'MEMUR') return "İDARİ BİRİM";
                         if (titleUpper.includes('TEKNİ') || titleUpper.includes('UÇAK')) return "TEKNİK EKİP";
                         if (titleUpper.includes('MEMUR') || titleUpper.includes('İŞÇİ') || titleUpper.includes('MÜHENDİS') || titleUpper.includes('ŞÖFÖR') || [Role.DRIVER, Role.CLEANING, Role.KITCHEN, Role.TEA_SERVICE, Role.OTHER].includes(p.role)) return "YER DESTEK";
                         return "İDARİ BİRİM";
@@ -3746,14 +3709,6 @@
                         const unit = fUK(p);
                         return unit !== "YÖNETİM" && unit !== "TEKNİK EKİP" && unit !== "YER DESTEK";
                     });
-
-                    if (reportUnit && reportUnit !== 'TÜM BİRİMLER') {
-                        targetP = targetP.filter(p => fUK(p) === reportUnit);
-                    }
-                    if (reportSearch && reportSearch.trim() !== '') {
-                        const searchUpper = reportSearch.toLocaleUpperCase('tr-TR').trim();
-                        targetP = targetP.filter(p => p.fullName.toLocaleUpperCase('tr-TR').includes(searchUpper));
-                    }
                     targetP.sort((a, b) => { 
                         const uA = fUK(a); 
                         const uB = fUK(b); 
@@ -3936,38 +3891,44 @@
                         const s = stats.find(st => st.id === p.id).s;
                         html += `<tr><td ${seqStyle}>${Number(i + 1)}</td><td colspan="2" ${nStyle}>${p.fullName}</td>`;
                         days.forEach(d => {
- const dStr = normalizeDate(d); // <-- BURASI OLMALI
-    const r = freshRecs.find(x => x.personId === p.id && x.date === dStr);
-    const isWe = d.getDay() === 0 || d.getDay() === 6;
+                            const dStr = normalizeDate(d);
+                            const r = freshRecs.find(x => x.personId === p.id && x.date === dStr);
+                            const isWe = d.getDay() === 0 || d.getDay() === 6;
 
-    let ct = isWe ? 'HT' : 'X';
+                            let ct = isWe ? 'HT' : 'X';
 
-    if (p.activeUntil && dStr > p.activeUntil) ct = 'İ.K';
-    else if (p.activeFrom && dStr < p.activeFrom) ct = 'P.YOK';
-    else if (r && r.status && r.status !== AttendanceStatus.PRESENT) {
-        if (r.status === AttendanceStatus.DUTY || r.status === AttendanceStatus.COURSE) {
-            ct = (r.dutyLocation || (r.status === AttendanceStatus.COURSE ? 'KURS' : 'GÖREV'))
-                .toLocaleUpperCase('tr-TR');
-        }
-        else if (r.status === AttendanceStatus.OTHER) {
-            ct = r.note ? r.note.toLocaleUpperCase('tr-TR') : '';
-        }
-        else {
-            ct = r.status === AttendanceStatus.LEAVE ? r.leaveType
-               : (r.status === AttendanceStatus.SICK ? 'R'
-               : (r.status === AttendanceStatus.HOSPITAL ? 'H'
-               : (r.status === AttendanceStatus.PUBLIC_HOLIDAY ? 'İ.İ.' : r.status)));
-        }
-    }
-                            const cellVal = (ct && (
-                                ct.toLocaleUpperCase('tr-TR') === 'MEVCUT' || 
-                                ct.toLocaleUpperCase('tr-TR') === 'MESAİ' || 
-                                ct.toLocaleUpperCase('tr-TR') === 'MESAİDE' || 
-                                ct.toLocaleUpperCase('tr-TR') === 'MESAI' || 
-                                ct.toLocaleUpperCase('tr-TR') === 'MESAIDE'
-                            )) ? 'X' : ct;
-                            const isCellValX = cellVal === 'X' || cellVal === 'x';
-                            html += `<td ${r && ![AttendanceStatus.PRESENT, AttendanceStatus.DUTY].includes(r.status) && !isCellValX ? rbStyle : cStyle}>${cellVal}</td>`;
+                            if (p.activeUntil && dStr > p.activeUntil) ct = 'İ.K';
+                            else if (p.activeFrom && dStr < p.activeFrom) ct = 'P.YOK';
+                            else if (r && r.status) {
+                                const rStatusUpper = String(r.status).toLocaleUpperCase('tr-TR').trim();
+                                if (rStatusUpper === 'MEVCUT' || rStatusUpper === 'MESAİ' || rStatusUpper === 'MESAI' || rStatusUpper === 'X') {
+                                    ct = isWe ? 'HT' : 'X';
+                                } else if (r.status !== AttendanceStatus.PRESENT) {
+                                    if (r.status === AttendanceStatus.DUTY || r.status === AttendanceStatus.COURSE) {
+                                        ct = (r.dutyLocation || (r.status === AttendanceStatus.COURSE ? 'KURS' : 'GÖREV'))
+                                            .toLocaleUpperCase('tr-TR');
+                                    }
+                                    else if (r.status === AttendanceStatus.OTHER) {
+                                        ct = r.note ? r.note.toLocaleUpperCase('tr-TR') : '';
+                                    }
+                                    else {
+                                        ct = r.status === AttendanceStatus.LEAVE ? r.leaveType
+                                           : (r.status === AttendanceStatus.SICK ? 'R'
+                                           : (r.status === AttendanceStatus.HOSPITAL ? 'H'
+                                           : (r.status === AttendanceStatus.PUBLIC_HOLIDAY ? 'İ.İ.' : r.status)));
+                                    }
+                                }
+                            }
+
+                            const ctUpper = String(ct).toLocaleUpperCase('tr-TR').trim();
+                            if (ctUpper === 'MEVCUT' || ctUpper === 'MESAİ' || ctUpper === 'MESAI' || ctUpper === 'X' || ctUpper === '') {
+                                ct = isWe ? 'HT' : 'X';
+                            }
+
+                            const isRedStyle = r && ![AttendanceStatus.PRESENT, AttendanceStatus.DUTY].includes(r.status) && ct !== 'X' && ct !== 'HT';
+                            const cellStyle = isRedStyle ? rbStyle : cStyle;
+
+                            html += `<td ${cellStyle}>${ct}</td>`;
                         });
                         activeCols.forEach(col => html += `<td ${numStyle}>${fmt(s[col.key])}</td>`);
                         let totalActive = 0; days.forEach(d => { if (!(p.activeUntil && normalizeDate(d) > p.activeUntil) && !(p.activeFrom && normalizeDate(d) < p.activeFrom)) totalActive++; });
@@ -4068,7 +4029,7 @@
                     <h1 className="text-3xl font-bold text-white mb-4">Yoklama Takip</h1>
                     <Card title="Birim Seçiniz">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {models.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK').map(m => {
+                            {models.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK' && m !== 'YÖNETİM' && m !== 'İDARİ').map(m => {
                                 const stat = dashboardStatus[m] || { pilotMissing: false, techMissing: false, groundMissing: false };
                                 const hasIssue = stat.pilotMissing || stat.techMissing || stat.groundMissing;
                                 return (
@@ -4113,7 +4074,7 @@
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                      <div>
                                         <label className="text-xs text-forest-400 block mb-1">Birim Seçimi</label>
-                                        <select className="w-full bg-forest-950 border border-forest-600 text-white rounded p-2 text-sm" value={reportUnit} onChange={(e) => setReportUnit(e.target.value)}><option value="TÜM BİRİMLER">TÜM BİRİMLER</option>{models.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK' && m !== 'YÖNETİM' && m !== 'İDARİ BİRİM').map(m => <option key={m} value={m}>{m}</option>)}<option value="İDARİ BİRİM">İDARİ BİRİM</option></select>
+                                        <select className="w-full bg-forest-950 border border-forest-600 text-white rounded p-2 text-sm" value={reportUnit} onChange={(e) => setReportUnit(e.target.value)}><option value="TÜM BİRİMLER">TÜM BİRİMLER</option>{models.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK' && m !== 'YÖNETİM' && m !== 'İDARİ').map(m => <option key={m} value={m}>{m}</option>)}</select>
                                      </div>
                                      <div>
                                         <label className="text-xs text-forest-400 block mb-1">Personel Arama</label>
