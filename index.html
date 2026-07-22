@@ -2876,6 +2876,12 @@
             const autoSaveTimerRef = useRef(null);
             const countdownIntervalRef = useRef(null);
             const saveRef = useRef(null);
+            const savePromiseRef = useRef(null);
+            const hasUnsavedChangesRef = useRef(false);
+
+            useEffect(() => {
+                hasUnsavedChangesRef.current = hasUnsavedChanges;
+            }, [hasUnsavedChanges]);
 
             const triggerAutoSaveCountdown = useCallback(() => {
                 setHasUnsavedChanges(true);
@@ -2959,7 +2965,9 @@
                 const uniqueModels = [...new Set(updatedAc.map(a => normalizeToIdariBirim(a.model)))].filter(m => m && m.length > 1 && m !== 'e' && m !== 'İDARİ' && m !== 'İDARI').sort();
                 setModels(uniqueModels);
                 setAllPersonnel(syncedPl || pl);
-                setAllRecs(recs || []);
+                if (!hasUnsavedChangesRef.current && !savePromiseRef.current) {
+                    setAllRecs(recs || []);
+                }
 
                 const finalPersonnel = syncedPl || pl;
                 if (finalPersonnel.length > 0) {
@@ -3043,6 +3051,18 @@
             }, []);
 
             const handleUnitSelection = async (unit) => {
+                if (isSaving || hasUnsavedChanges || savePromiseRef.current) {
+                    setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
+                    try {
+                        if (savePromiseRef.current) {
+                            await savePromiseRef.current;
+                        } else if (hasUnsavedChanges) {
+                            await save(true);
+                        }
+                    } catch (e) {
+                        console.error("Auto save before unit switch error:", e);
+                    }
+                }
                 setSelModel(unit);
                 if (unit === AircraftModel.TEKNIK_EKIP || unit === AircraftModel.YER_DESTEK) {
                     try {
@@ -3127,6 +3147,18 @@
             }, [loadDashboardData]);
 
             const handleBackToDashboard = async () => {
+                if (isSaving || hasUnsavedChanges || savePromiseRef.current) {
+                    setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
+                    try {
+                        if (savePromiseRef.current) {
+                            await savePromiseRef.current;
+                        } else if (hasUnsavedChanges) {
+                            await save(true);
+                        }
+                    } catch (e) {
+                        console.error("Auto save before back to dashboard error:", e);
+                    }
+                }
                 setSelModel(null);
                 setIsOrderChanged(false);
                 try {
@@ -3338,230 +3370,244 @@
             });
 
             const save = async (isAutoSave = false) => {
-                if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-                if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-                setAutoSaveCountdown(null);
-
-                setIsSaving(true);
-                setSaveVerifiedMsg("Veriler e-tabloya gönderiliyor ve doğrulanıyor...");
-
-                const days = getDaysInRange(rangeStartDate, rangeEndDate);
-                const dayStrings = days.map(d => normalizeDate(d));
-                const isWeeklyMode = rangeStartDate !== rangeEndDate;
-
-                // Determine which people have "mixed/detailed" records (Blurred rows)
-                // We must skip saving for them to prevent overwriting detailed data with bulk data.
-                const personsToSkip = new Set();
-                if (isWeeklyMode) {
-                    people.forEach(p => {
-                        const weekdayDays = days.filter(d => d.getDay() !== 0 && d.getDay() !== 6);
-                        const recordsInRange = weekdayDays.map(d => {
-                            const checkDate = normalizeDate(d);
-                            return allRecs.find(r => r.personId === p.id && r.date === checkDate && r.status && r.status !== '');
-                        }).filter(r => !!r);
-
-                        if (recordsInRange.length > 0) {
-                            if (recordsInRange.length < weekdayDays.length) {
-                                personsToSkip.add(p.id); // Partial data -> Blurred
-                            } else {
-                                const firstRec = recordsInRange[0];
-                                const isUniform = recordsInRange.every(r => 
-                                    r.status === firstRec.status &&
-                                    r.dutyType === firstRec.dutyType &&
-                                    r.dutyLocation === firstRec.dutyLocation &&
-                                    r.leaveType === firstRec.leaveType &&
-                                    r.note === firstRec.note
-                                );
-                                if (!isUniform) personsToSkip.add(p.id); // Mixed data -> Blurred
-                            }
-                        }
-                    });
+                if (savePromiseRef.current) {
+                    setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
+                    return savePromiseRef.current;
                 }
 
-                const recs = [];
-                let counter = 0;
-                const timestamp = Date.now();
+                const runSave = async () => {
+                    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+                    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+                    setAutoSaveCountdown(null);
 
-                days.forEach(dateObj => {
-                    const dStr = normalizeDate(dateObj);
-                    const dayOfWeek = dateObj.getDay();
-                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                    
-                    // Logic to detect if we are unsetting an FMI or Weekend Duty on Friday
-                    // If so, we must clean up Sat/Sun records if they exist.
-                    const isFriday = dayOfWeek === 5;
+                    setIsSaving(true);
+                    setSaveVerifiedMsg("Veriler e-tabloya gönderiliyor ve doğrulanıyor...");
 
-                    people.forEach(p => {
-                        if (personsToSkip.has(p.id)) return; // Skip blurred rows
+                    const days = getDaysInRange(rangeStartDate, rangeEndDate);
+                    const dayStrings = days.map(d => normalizeDate(d));
+                    const isWeeklyMode = rangeStartDate !== rangeEndDate;
 
-                        const s = att[p.id];
-                        
-                        if (s?.status === undefined || s?.status === '') {
-                            const existingRec = allRecs.find(r => r.personId === p.id && r.date === dStr);
-                            if (existingRec) {
-                                counter++;
-                                recs.push({
-                                    ...existingRec,
-                                    status: '' // Empty status signals deletion to backend
-                                });
+                    // Determine which people have "mixed/detailed" records (Blurred rows)
+                    // We must skip saving for them to prevent overwriting detailed data with bulk data.
+                    const personsToSkip = new Set();
+                    if (isWeeklyMode) {
+                        people.forEach(p => {
+                            const weekdayDays = days.filter(d => d.getDay() !== 0 && d.getDay() !== 6);
+                            const recordsInRange = weekdayDays.map(d => {
+                                const checkDate = normalizeDate(d);
+                                return allRecs.find(r => r.personId === p.id && r.date === checkDate && r.status && r.status !== '');
+                            }).filter(r => !!r);
+
+                            if (recordsInRange.length > 0) {
+                                if (recordsInRange.length < weekdayDays.length) {
+                                    personsToSkip.add(p.id); // Partial data -> Blurred
+                                } else {
+                                    const firstRec = recordsInRange[0];
+                                    const isUniform = recordsInRange.every(r => 
+                                        r.status === firstRec.status &&
+                                        r.dutyType === firstRec.dutyType &&
+                                        r.dutyLocation === firstRec.dutyLocation &&
+                                        r.leaveType === firstRec.leaveType &&
+                                        r.note === firstRec.note
+                                    );
+                                    if (!isUniform) personsToSkip.add(p.id); // Mixed data -> Blurred
+                                }
                             }
-                            return;
-                        }
-
-                        if (!s?.status) return;
-
-                        // Background data cleanup: If weekend and weekly mode, skip saving unless explicitly included.
-                        // But if there's an existing record, we MUST clear it by sending status: ''
-                        if (isWeekend && isWeeklyMode && !s.includeWeekend) {
-                            const existingRec = allRecs.find(r => r.personId === p.id && r.date === dStr);
-                            if (existingRec) {
-                                counter++;
-                                recs.push({
-                                    ...existingRec,
-                                    status: '' // Reset to HT (Delete record)
-                                });
-                            }
-                            return;
-                        }
-
-                        const dType = s.dutyType || DutyType.PLANNED;
-                        
-                        const isPlannedDuty = s.status === AttendanceStatus.DUTY && dType === DutyType.PLANNED;
-                        const isOvertimeLeave = s.status === AttendanceStatus.LEAVE && s.leaveType === LeaveType.OVERTIME;
-                        
-                        // Condition to extend to weekend (Friday + 2 days logic) AND condition to skip weekend if not checked
-                        const shouldIncludeWeekend = isPlannedDuty || isOvertimeLeave;
-
-                        // FMI / Duty Auto-Cleanup Logic for Friday
-                        if (isFriday) {
-                             // If user is NOT selecting "Include Weekend", but there might be existing weekend records
-                             // Or if status changed away from Duty/FMI
-                             // We should check and remove them by sending empty status
-                             
-                             // Calculate Sat/Sun dates
-                             const satDate = new Date(dateObj); satDate.setDate(satDate.getDate() + 1); const satStr = normalizeDate(satDate);
-                             const sunDate = new Date(dateObj); sunDate.setDate(sunDate.getDate() + 2); const sunStr = normalizeDate(sunDate);
-                             
-                             // Check if existing records have ANY status
-                             const existingSat = allRecs.find(r => r.personId === p.id && r.date === satStr && r.status && r.status !== '');
-                             const existingSun = allRecs.find(r => r.personId === p.id && r.date === sunStr && r.status && r.status !== '');
-                             
-                             const hasWeekendJunk = (existingSat && existingSat.status && existingSat.status !== '') || 
-                                                    (existingSun && existingSun.status && existingSun.status !== '');
-
-                             if (hasWeekendJunk && (!shouldIncludeWeekend || !s.includeWeekend)) {
-                                 // Add cleanup records
-                                 counter++;
-                                 recs.push({
-                                    id: `${timestamp}-${counter}-cleanup-sat-${p.id}`,
-                                    date: satStr,
-                                    personId: p.id,
-                                    status: '', // Reset to HT (Delete record)
-                                    aircraftTypeSnapshot: selModel || undefined
-                                 });
-                                 counter++;
-                                 recs.push({
-                                    id: `${timestamp}-${counter}-cleanup-sun-${p.id}`,
-                                    date: sunStr,
-                                    personId: p.id,
-                                    status: '', // Reset to HT (Delete record)
-                                    aircraftTypeSnapshot: selModel || undefined
-                                 });
-                             }
-                        }
-
-                        counter++;
-                        recs.push({
-                            id: `${timestamp}-${counter}-${p.id}`,
-                            date: dStr,
-                            personId: p.id,
-                            status: s.status,
-                            dutyLocation: s.dutyLocation,
-                            dutyLocationDetail: s.dutyLocationDetail,
-                            leaveType: s.leaveType,
-                            note: s.note,
-                            dutyType: dType,
-                            includeWeekend: !!s.includeWeekend,
-                            aircraftTypeSnapshot: selModel || undefined
                         });
-
-                        if (dayOfWeek === 5 && shouldIncludeWeekend && s.includeWeekend) {
-                            const satDate = new Date(dateObj);
-                            satDate.setDate(satDate.getDate() + 1);
-                            const satStr = normalizeDate(satDate);
-
-                            const sunDate = new Date(dateObj);
-                            sunDate.setDate(sunDate.getDate() + 2);
-                            const sunStr = normalizeDate(sunDate);
-
-                            const isSatInSelection = dayStrings.includes(satStr);
-                            const isSunInSelection = dayStrings.includes(sunStr);
-
-                            if (!isSatInSelection) {
-                                counter++;
-                                recs.push({
-                                    id: `${timestamp}-${counter}-${p.id}`,
-                                    date: satStr,
-                                    personId: p.id,
-                                    status: s.status,
-                                    dutyLocation: s.dutyLocation,
-                                    dutyLocationDetail: s.dutyLocationDetail,
-                                    leaveType: s.leaveType,
-                                    note: s.note,
-                                    dutyType: dType,
-                                    includeWeekend: true,
-                                    aircraftTypeSnapshot: selModel || undefined
-                                });
-                            }
-
-                            if (!isSunInSelection) {
-                                counter++;
-                                recs.push({
-                                    id: `${timestamp}-${counter}-${p.id}`,
-                                    date: sunStr,
-                                    personId: p.id,
-                                    status: s.status,
-                                    dutyLocation: s.dutyLocation,
-                                    dutyLocationDetail: s.dutyLocationDetail,
-                                    leaveType: s.leaveType,
-                                    note: s.note,
-                                    dutyType: dType,
-                                    includeWeekend: true,
-                                    aircraftTypeSnapshot: selModel || undefined
-                                });
-                            }
-                        }
-                    });
-                });
-
-                if (recs.length === 0) {
-                    setIsSaving(false);
-                    setHasUnsavedChanges(false);
-                    if (!isAutoSave) {
-                        setSaveVerifiedMsg("Kaydedilecek yeni değişiklik yok.");
-                        setTimeout(() => setSaveVerifiedMsg(null), 3000);
-                    } else {
-                        setSaveVerifiedMsg(null);
                     }
-                    return;
-                }
 
+                    const recs = [];
+                    let counter = 0;
+                    const timestamp = Date.now();
+
+                    days.forEach(dateObj => {
+                        const dStr = normalizeDate(dateObj);
+                        const dayOfWeek = dateObj.getDay();
+                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                        
+                        // Logic to detect if we are unsetting an FMI or Weekend Duty on Friday
+                        // If so, we must clean up Sat/Sun records if they exist.
+                        const isFriday = dayOfWeek === 5;
+
+                        people.forEach(p => {
+                            if (personsToSkip.has(p.id)) return; // Skip blurred rows
+
+                            const s = att[p.id];
+                            
+                            if (s?.status === undefined || s?.status === '') {
+                                const existingRec = allRecs.find(r => r.personId === p.id && r.date === dStr);
+                                if (existingRec) {
+                                    counter++;
+                                    recs.push({
+                                        ...existingRec,
+                                        status: '' // Empty status signals deletion to backend
+                                    });
+                                }
+                                return;
+                            }
+
+                            if (!s?.status) return;
+
+                            // Background data cleanup: If weekend and weekly mode, skip saving unless explicitly included.
+                            // But if there's an existing record, we MUST clear it by sending status: ''
+                            if (isWeekend && isWeeklyMode && !s.includeWeekend) {
+                                const existingRec = allRecs.find(r => r.personId === p.id && r.date === dStr);
+                                if (existingRec) {
+                                    counter++;
+                                    recs.push({
+                                        ...existingRec,
+                                        status: '' // Reset to HT (Delete record)
+                                    });
+                                }
+                                return;
+                            }
+
+                            const dType = s.dutyType || DutyType.PLANNED;
+                            
+                            const isPlannedDuty = s.status === AttendanceStatus.DUTY && dType === DutyType.PLANNED;
+                            const isOvertimeLeave = s.status === AttendanceStatus.LEAVE && s.leaveType === LeaveType.OVERTIME;
+                            
+                            // Condition to extend to weekend (Friday + 2 days logic) AND condition to skip weekend if not checked
+                            const shouldIncludeWeekend = isPlannedDuty || isOvertimeLeave;
+
+                            // FMI / Duty Auto-Cleanup Logic for Friday
+                            if (isFriday) {
+                                 // If user is NOT selecting "Include Weekend", but there might be existing weekend records
+                                 // Or if status changed away from Duty/FMI
+                                 // We should check and remove them by sending empty status
+                                 
+                                 // Calculate Sat/Sun dates
+                                 const satDate = new Date(dateObj); satDate.setDate(satDate.getDate() + 1); const satStr = normalizeDate(satDate);
+                                 const sunDate = new Date(dateObj); sunDate.setDate(sunDate.getDate() + 2); const sunStr = normalizeDate(sunDate);
+                                 
+                                 // Check if existing records have ANY status
+                                 const existingSat = allRecs.find(r => r.personId === p.id && r.date === satStr && r.status && r.status !== '');
+                                 const existingSun = allRecs.find(r => r.personId === p.id && r.date === sunStr && r.status && r.status !== '');
+                                 
+                                 const hasWeekendJunk = (existingSat && existingSat.status && existingSat.status !== '') || 
+                                                        (existingSun && existingSun.status && existingSun.status !== '');
+
+                                 if (hasWeekendJunk && (!shouldIncludeWeekend || !s.includeWeekend)) {
+                                     // Add cleanup records
+                                     counter++;
+                                     recs.push({
+                                        id: `${timestamp}-${counter}-cleanup-sat-${p.id}`,
+                                        date: satStr,
+                                        personId: p.id,
+                                        status: '', // Reset to HT (Delete record)
+                                        aircraftTypeSnapshot: selModel || undefined
+                                     });
+                                     counter++;
+                                     recs.push({
+                                        id: `${timestamp}-${counter}-cleanup-sun-${p.id}`,
+                                        date: sunStr,
+                                        personId: p.id,
+                                        status: '', // Reset to HT (Delete record)
+                                        aircraftTypeSnapshot: selModel || undefined
+                                     });
+                                 }
+                            }
+
+                            counter++;
+                            recs.push({
+                                id: `${timestamp}-${counter}-${p.id}`,
+                                date: dStr,
+                                personId: p.id,
+                                status: s.status,
+                                dutyLocation: s.dutyLocation,
+                                dutyLocationDetail: s.dutyLocationDetail,
+                                leaveType: s.leaveType,
+                                note: s.note,
+                                dutyType: dType,
+                                includeWeekend: !!s.includeWeekend,
+                                aircraftTypeSnapshot: selModel || undefined
+                            });
+
+                            if (dayOfWeek === 5 && shouldIncludeWeekend && s.includeWeekend) {
+                                const satDate = new Date(dateObj);
+                                satDate.setDate(satDate.getDate() + 1);
+                                const satStr = normalizeDate(satDate);
+
+                                const sunDate = new Date(dateObj);
+                                sunDate.setDate(sunDate.getDate() + 2);
+                                const sunStr = normalizeDate(sunDate);
+
+                                const isSatInSelection = dayStrings.includes(satStr);
+                                const isSunInSelection = dayStrings.includes(sunStr);
+
+                                if (!isSatInSelection) {
+                                    counter++;
+                                    recs.push({
+                                        id: `${timestamp}-${counter}-${p.id}`,
+                                        date: satStr,
+                                        personId: p.id,
+                                        status: s.status,
+                                        dutyLocation: s.dutyLocation,
+                                        dutyLocationDetail: s.dutyLocationDetail,
+                                        leaveType: s.leaveType,
+                                        note: s.note,
+                                        dutyType: dType,
+                                        includeWeekend: true,
+                                        aircraftTypeSnapshot: selModel || undefined
+                                    });
+                                }
+
+                                if (!isSunInSelection) {
+                                    counter++;
+                                    recs.push({
+                                        id: `${timestamp}-${counter}-${p.id}`,
+                                        date: sunStr,
+                                        personId: p.id,
+                                        status: s.status,
+                                        dutyLocation: s.dutyLocation,
+                                        dutyLocationDetail: s.dutyLocationDetail,
+                                        leaveType: s.leaveType,
+                                        note: s.note,
+                                        dutyType: dType,
+                                        includeWeekend: true,
+                                        aircraftTypeSnapshot: selModel || undefined
+                                    });
+                                }
+                            }
+                        });
+                    });
+
+                    if (recs.length === 0) {
+                        setIsSaving(false);
+                        setHasUnsavedChanges(false);
+                        if (!isAutoSave) {
+                            setSaveVerifiedMsg("Kaydedilecek yeni değişiklik yok.");
+                            setTimeout(() => setSaveVerifiedMsg(null), 3000);
+                        } else {
+                            setSaveVerifiedMsg(null);
+                        }
+                        return;
+                    }
+
+                    try {
+                        await storageService.saveAttendance(recs);
+                        await storageService.refresh();
+                        await loadDashboardData();
+                        const freshRecs = storageService.getAttendanceSync();
+                        setAllRecs(freshRecs);
+                        if (onSaveExternal) onSaveExternal(freshRecs);
+                        setHasUnsavedChanges(false);
+                        setSaveVerifiedMsg("Veri gönderildi, e-tabloda varlığı doğrulandı ve kaydedildi! ✓");
+                        setTimeout(() => setSaveVerifiedMsg(null), 4000);
+                    } catch (e) {
+                        console.error("Save Error", e);
+                        setSaveVerifiedMsg(null);
+                        alert('Sistem e-tabloya kaydedilemedi hatası: ' + (e.message || 'E-tabloya yazma/doğrulama başarısız oldu.'));
+                    } finally {
+                        setIsSaving(false);
+                    }
+                };
+
+                savePromiseRef.current = runSave();
                 try {
-                    await storageService.saveAttendance(recs);
-                    await storageService.refresh();
-                    await loadDashboardData();
-                    const freshRecs = storageService.getAttendanceSync();
-                    setAllRecs(freshRecs);
-                    if (onSaveExternal) onSaveExternal(freshRecs);
-                    setHasUnsavedChanges(false);
-                    setSaveVerifiedMsg("Veri gönderildi, e-tabloda varlığı doğrulandı ve kaydedildi! ✓");
-                    setTimeout(() => setSaveVerifiedMsg(null), 4000);
-                } catch (e) {
-                    console.error("Save Error", e);
-                    setSaveVerifiedMsg(null);
-                    alert('Sistem e-tabloya kaydedilemedi hatası: ' + (e.message || 'E-tabloya yazma/doğrulama başarısız oldu.'));
+                    await savePromiseRef.current;
                 } finally {
-                    setIsSaving(false);
+                    savePromiseRef.current = null;
                 }
             };
 
@@ -3604,6 +3650,7 @@
             };
 
             const handleStatusChangeWithAuth = (pid, status) => {
+                if (isSaving || !!savePromiseRef.current) return;
                 if (isEditUnlocked) {
                     handleAttendanceChange(pid, status);
                 } else {
@@ -3613,6 +3660,7 @@
             };
 
             const handleDetailChangeWithAuth = (pid, field, value) => {
+                if (isSaving || !!savePromiseRef.current) return;
                 if (isEditUnlocked) {
                     handleDetailChange(pid, field, value);
                 } else {
@@ -3622,6 +3670,7 @@
             };
 
             const openDetailModalWithAuth = async (person) => {
+                if (isSaving || !!savePromiseRef.current) return;
                 if (isEditUnlocked) {
                     await openDetailModal(person);
                 } else {
@@ -3635,9 +3684,18 @@
                 if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
                 setAutoSaveCountdown(null);
 
-                // Detaylı Günlük Giriş modeline geçmeden önce kaydedilmemiş değişiklikler varsa kaydet
-                if (hasUnsavedChanges) {
-                    await save(true);
+                // Detaylı Günlük Giriş modeline geçmeden önce kaydedilmemiş değişiklikler veya süren kaydetme varsa bekle
+                if (isSaving || hasUnsavedChanges || savePromiseRef.current) {
+                    setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
+                    try {
+                        if (savePromiseRef.current) {
+                            await savePromiseRef.current;
+                        } else if (hasUnsavedChanges) {
+                            await save(true);
+                        }
+                    } catch (e) {
+                        console.error("Auto save before openDetailModal failed", e);
+                    }
                 }
 
                 setDetailPerson(person);
@@ -4310,11 +4368,11 @@
                             </div>
                         </div>
                     )}
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 text-white bg-forest-700/50 p-4 rounded border border-forest-600 gap-4 sticky top-4 z-50 shadow-lg backdrop-blur-md bg-forest-700/90">
+                    <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 text-white bg-forest-700/50 p-4 rounded border border-forest-600 gap-4 sticky top-4 z-50 shadow-lg backdrop-blur-md bg-forest-700/90 ${(isSaving || savePromiseRef.current) ? 'pointer-events-none opacity-50 select-none' : ''}`}>
                         <div className="flex items-center gap-4">
                             <h2 className="text-xl font-bold flex items-center gap-2"><ModelIcon model={selModel} category={inv.find(a => a.model === selModel)?.category} /> {selModel}</h2>
                             {isOrderChanged && (
-                                <button onClick={saveOrder} className="bg-orange-600 hover:bg-orange-500 text-white px-3 py-1 rounded text-xs font-bold animate-pulse flex items-center gap-1">
+                                <button onClick={saveOrder} disabled={isSaving || !!savePromiseRef.current} className="bg-orange-600 hover:bg-orange-500 text-white px-3 py-1 rounded text-xs font-bold animate-pulse flex items-center gap-1 disabled:opacity-50">
                                     <Save size={14} /> Sıralamayı Kaydet
                                 </button>
                             )}
@@ -4325,12 +4383,13 @@
                                 <input 
                                     type="text" 
                                     placeholder="Personel Ara..." 
-                                    className="bg-forest-900 border border-forest-500 rounded p-1.5 pl-8 text-sm text-white w-48 focus:ring-1 focus:ring-forest-400 outline-none" 
+                                    disabled={isSaving || !!savePromiseRef.current}
+                                    className="bg-forest-900 border border-forest-500 rounded p-1.5 pl-8 text-sm text-white w-48 focus:ring-1 focus:ring-forest-400 outline-none disabled:opacity-50" 
                                     value={searchName || ''} 
                                     onChange={(e) => setSearchName(e.target.value)} 
                                 />
                                 {searchName && (
-                                    <button onClick={() => setSearchName(null)} className="absolute right-2 top-2.5 text-forest-400 hover:text-white">
+                                    <button onClick={() => setSearchName(null)} disabled={isSaving || !!savePromiseRef.current} className="absolute right-2 top-2.5 text-forest-400 hover:text-white">
                                         <X size={14} />
                                     </button>
                                 )}
@@ -4338,18 +4397,54 @@
                             <div className="flex flex-col">
                                 <label className="text-[10px] text-forest-400 uppercase font-bold">Tarih Aralığı</label>
                                 <div className="flex items-center gap-1">
-                                    <input type="date" value={rangeStartDate} onChange={e => setRangeStartDate(e.target.value)} className="bg-forest-900 text-white p-1 rounded border border-forest-500 text-sm w-28" />
+                                    <input type="date" disabled={isSaving || !!savePromiseRef.current} value={rangeStartDate} onChange={async (e) => {
+                                        const newStart = e.target.value;
+                                        if (isSaving || hasUnsavedChanges || savePromiseRef.current) {
+                                            setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
+                                            try {
+                                                if (savePromiseRef.current) {
+                                                    await savePromiseRef.current;
+                                                } else if (hasUnsavedChanges) {
+                                                    await save(true);
+                                                }
+                                            } catch(err) {}
+                                        }
+                                        setRangeStartDate(newStart);
+                                    }} className="bg-forest-900 text-white p-1 rounded border border-forest-500 text-sm w-28 disabled:opacity-50" />
                                     <span className="text-forest-500">-</span>
-                                    <input type="date" value={rangeEndDate} onChange={e => setRangeEndDate(e.target.value)} className="bg-forest-900 text-white p-1 rounded border border-forest-500 text-sm w-28" />
+                                    <input type="date" disabled={isSaving || !!savePromiseRef.current} value={rangeEndDate} onChange={async (e) => {
+                                        const newEnd = e.target.value;
+                                        if (isSaving || hasUnsavedChanges || savePromiseRef.current) {
+                                            setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
+                                            try {
+                                                if (savePromiseRef.current) {
+                                                    await savePromiseRef.current;
+                                                } else if (hasUnsavedChanges) {
+                                                    await save(true);
+                                                }
+                                            } catch(err) {}
+                                        }
+                                        setRangeEndDate(newEnd);
+                                    }} className="bg-forest-900 text-white p-1 rounded border border-forest-500 text-sm w-28 disabled:opacity-50" />
                                 </div>
                             </div>
-                            <Button variant="secondary" onClick={handleBackToDashboard} className="h-9">EKRANA DÖN</Button>
+                            <Button variant="secondary" onClick={handleBackToDashboard} disabled={isSaving || !!savePromiseRef.current} className="h-9 disabled:opacity-50">EKRANA DÖN</Button>
                         </div>
                     </div>
                     {rangeStartDate !== rangeEndDate && (<div className="bg-blue-900/40 border border-blue-700 p-3 rounded-lg flex items-center text-blue-200 text-sm mb-4 animate-fade-in"><strong>DİKKAT:</strong> Seçtiğiniz durumlar {rangeStartDate} ile {rangeEndDate} arasındaki TÜM GÜNLERE uygulanacaktır.</div>)}
                     <Card title="Personel Listesi">
-                         <div className="grid gap-4">
-                            {[...pilots, ...others].map((p, i) => renderPersonRow(p, i))}
+                         <div className="relative">
+                             <div className={`grid gap-4 transition-all duration-300 ${(isSaving || savePromiseRef.current) ? 'blur-[2px] opacity-60 pointer-events-none select-none' : ''}`}>
+                                {[...pilots, ...others].map((p, i) => renderPersonRow(p, i))}
+                            </div>
+                            {(isSaving || savePromiseRef.current) && (
+                                <div className="absolute inset-0 bg-forest-950/70 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center z-30 p-4">
+                                    <Loader2 size={36} className="animate-spin text-teal-400 mb-3" />
+                                    <span className="text-white font-bold text-base bg-forest-900/90 border border-teal-500/60 px-5 py-2.5 rounded-xl shadow-2xl animate-pulse">
+                                        Veri kaydediliyor, lütfen bekleyiniz...
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </Card>
                   
