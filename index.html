@@ -3588,14 +3588,15 @@
             };
 
             // SECURITY WRAPPERS
-            const handleUnlock = (e) => {
+            const handleUnlock = async (e) => {
                 e.preventDefault();
                 if (unlockPassword === '1839') {
                     setIsEditUnlocked(true);
                     setShowUnlockModal(false);
                     if (pendingAction) {
-                        pendingAction();
+                        const action = pendingAction;
                         setPendingAction(null);
+                        await action();
                     }
                 } else {
                     alert('Hatalı şifre!');
@@ -3620,40 +3621,35 @@
                 }
             };
 
-            const openDetailModalWithAuth = (person) => {
+            const openDetailModalWithAuth = async (person) => {
                 if (isEditUnlocked) {
-                    openDetailModal(person);
+                    await openDetailModal(person);
                 } else {
                     setPendingAction(() => () => openDetailModal(person));
                     setShowUnlockModal(true);
                 }
             };
 
-            const openDetailModal = (person) => {
+            const openDetailModal = async (person) => {
                 if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
                 if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
                 setAutoSaveCountdown(null);
 
+                // Detaylı Günlük Giriş modeline geçmeden önce kaydedilmemiş değişiklikler varsa kaydet
+                if (hasUnsavedChanges) {
+                    await save(true);
+                }
+
                 setDetailPerson(person);
 
-                let days = getDaysInRange(rangeStartDate, rangeEndDate);
-                if (rangeStartDate === rangeEndDate) {
-                    const [y, m, d] = rangeStartDate.split('-').map(Number);
-                    const curr = new Date(y, m - 1, d, 12, 0, 0);
-                    const dayOfWeek = curr.getDay();
-                    const diffToMon = (dayOfWeek === 0) ? -6 : (1 - dayOfWeek);
-                    const monDate = new Date(curr);
-                    monDate.setDate(curr.getDate() + diffToMon);
-                    const sunDate = new Date(monDate);
-                    sunDate.setDate(monDate.getDate() + 6);
-                    days = getDaysInRange(normalizeDate(monDate), normalizeDate(sunDate));
-                }
+                const days = getDaysInRange(rangeStartDate, rangeEndDate);
+                const freshRecs = storageService.getAttendanceSync() || allRecs;
 
                 const initialStates = {};
 
                 days.forEach(d => {
                     const dStr = normalizeDate(d);
-                    const r = allRecs.find(rec => rec.personId === person.id && rec.date === dStr && rec.status && rec.status !== '');
+                    const r = freshRecs.find(rec => rec.personId === person.id && rec.date === dStr && rec.status && rec.status !== '');
                     const isWe = d.getDay() === 0 || d.getDay() === 6;
                     const validStatuses = Object.values(AttendanceStatus);
 
@@ -4154,7 +4150,9 @@
                                     <button onClick={() => movePerson(i, 'up')} className="text-forest-500 hover:text-white"><ArrowUp size={14} /></button>
                                     <button onClick={() => movePerson(i, 'down')} className="text-forest-500 hover:text-white"><ArrowDown size={14} /></button>
                                 </div>
-                                <button onClick={() => openDetailModalWithAuth(p)} title="Detaylı Günlük Giriş / Düzenle" className="bg-blue-600 p-1.5 hover:bg-blue-500 text-white rounded shadow-sm transition-all flex items-center justify-center flex-shrink-0" id={`btn-detail-${p.id}`}><CalendarDays size={18} /></button>
+                                {rangeStartDate !== rangeEndDate && (
+                                    <button onClick={() => openDetailModalWithAuth(p)} title="Detaylı Günlük Giriş / Düzenle" className="bg-blue-600 p-1.5 hover:bg-blue-500 text-white rounded shadow-sm transition-all flex items-center justify-center flex-shrink-0" id={`btn-detail-${p.id}`}><CalendarDays size={18} /></button>
+                                )}
                                 <span className="text-forest-500 w-6 text-center">{i + 1}</span>
                                 <div 
                                     className="cursor-help relative group/name flex items-center gap-3"
