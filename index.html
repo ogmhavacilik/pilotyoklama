@@ -323,23 +323,39 @@
             loaded: false
         };
 
-        const apiCall = async (action, payload = {}) => {
+        const apiCall = async (action, payload = {}, timeoutMs = 60000) => {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); 
+            const timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null; 
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'cors',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
                     redirect: 'follow',
                     body: JSON.stringify({ action, ...payload }),
                     signal: controller.signal
                 });
-                clearTimeout(timeoutId);
-                const json = await response.json();
-                if (!json.success) throw new Error(json.error || 'API Error');
-                return json.data;
+                if (timeoutId) clearTimeout(timeoutId);
+                const rawText = await response.text();
+                let json = null;
+                try {
+                    json = JSON.parse(rawText);
+                } catch (e) {
+                    // Response was plain text or non-JSON
+                }
+                if (json) {
+                    if (json.success === false) throw new Error(json.error || 'API Error');
+                    return json.data !== undefined ? json.data : json;
+                }
+                return rawText;
             } catch (error) {
-                clearTimeout(timeoutId);
+                if (timeoutId) clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    console.warn(`API call '${action}' was aborted or timed out after ${timeoutMs}ms.`);
+                    return null;
+                }
                 throw error;
             }
         };
@@ -348,7 +364,7 @@
             preload: async () => {
                 try {
                     const data = await apiCall('get_init_data');
-                    if (data.aircraft) {
+                    if (data && data.aircraft) {
                         const formattedAC = data.aircraft.map(a => {
                             let mName = normalizeToIdariBirim(a.model);
                             return { ...a, id: String(a.id), model: mName };
@@ -356,7 +372,7 @@
                         localData.saveAircraft(formattedAC);
                         memoryCache.aircraft = formattedAC;
                     }
-                    if (data.personnel) {
+                    if (data && data.personnel) {
                         let formattedPL = data.personnel.map(p => {
                             // TC No için tüm olası anahtar varyasyonlarını tara (TC NO, TC no, tc_no, TC, tcNo vb.)
                             let foundTc = '';
@@ -403,16 +419,18 @@
                     }
 
                     const att = await apiCall('get_attendance');
-                    const formattedAtt = att.map(r => ({
-                        ...r,
-                        id: String(r.id),
-                        personId: String(r.personId),
-                        date: normalizeDate(r.date),
-                        status: r.status === 'İzinli' ? 'İzin' : r.status
-                    })).filter(r => r.status && r.status !== '');
+                    if (att && Array.isArray(att)) {
+                        const formattedAtt = att.map(r => ({
+                            ...r,
+                            id: String(r.id),
+                            personId: String(r.personId),
+                            date: normalizeDate(r.date),
+                            status: r.status === 'İzinli' ? 'İzin' : r.status
+                        })).filter(r => r.status && r.status !== '');
 
-                    localData.setAttendance(formattedAtt);
-                    memoryCache.attendance = formattedAtt;
+                        localData.setAttendance(formattedAtt);
+                        memoryCache.attendance = formattedAtt;
+                    }
                     memoryCache.loaded = true;
                 } catch (e) {
                     console.warn("Preload failed, using local", e);
@@ -453,45 +471,10 @@
             saveAttendance: async (data) => {
                 const updatedFullList = localData.saveAttendance(data);
                 memoryCache.attendance = updatedFullList;
-                await apiCall('save_attendance', { records: data });
-
-                try {
-                    const remoteAttendance = await apiCall('get_attendance');
-                    if (Array.isArray(remoteAttendance)) {
-                        const formattedRemote = remoteAttendance.map(r => ({
-                            ...r,
-                            id: String(r.id),
-                            personId: String(r.personId),
-                            date: normalizeDate(r.date),
-                            status: r.status === 'İzinli' ? 'İzin' : r.status
-                        })).filter(r => r.status && r.status !== '');
-
-                        const nonDeleteRecords = data.filter(r => r.status && r.status !== '');
-                        if (nonDeleteRecords.length > 0) {
-                            const missing = nonDeleteRecords.filter(savedRec => {
-                                return !formattedRemote.some(r => 
-                                    r.personId === savedRec.personId && 
-                                    r.date === savedRec.date && 
-                                    r.status === savedRec.status
-                                );
-                            });
-                            if (missing.length > 0) {
-                                throw new Error('Veri e-tabloya gönderildi ancak e-tabloda bulunamadı! (Arka plana kaydedilemedi)');
-                            }
-                        }
-
-                        localData.setAttendance(formattedRemote);
-                        memoryCache.attendance = formattedRemote;
-                        memoryCache.loaded = true;
-                        return formattedRemote;
-                    }
-                } catch(e) {
-                    if (e.message && e.message.includes('bulunamadı')) {
-                        throw e;
-                    }
-                    console.warn("Verification warning:", e);
-                }
-
+                // Instant non-blocking background sync to Google Sheets
+                apiCall('save_attendance', { records: data }).catch(e => {
+                    console.warn("Background save info:", e);
+                });
                 return updatedFullList;
             },
             fetchSafeImage: async (fileId) => {
@@ -3051,8 +3034,8 @@
             }, []);
 
             const handleUnitSelection = async (unit) => {
+                if (isUnitsLoading) return;
                 if (isSaving || hasUnsavedChanges || savePromiseRef.current) {
-                    setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
                     try {
                         if (savePromiseRef.current) {
                             await savePromiseRef.current;
@@ -3129,26 +3112,28 @@
                     loadDashboardData();
                     setLoading(false); // Do not show the loader, because we have cache!
                     
-                    // Fetch data silently in the background so that any new records are updated
+                    // Keep unit buttons flu/disabled while remote data preloads in background
+                    setIsUnitsLoading(true);
                     storageService.preload()
                         .then(() => loadDashboardData())
-                        .catch(e => console.warn("Background preload silent fail", e));
+                        .catch(e => console.warn("Background preload silent fail", e))
+                        .finally(() => setIsUnitsLoading(false));
                 } else {
                     // First time loading - show the loader as there's no cached data
                     setLoading(true);
+                    setIsUnitsLoading(true);
                     storageService.preload()
                         .then(() => loadDashboardData())
-                        .then(() => setLoading(false))
-                        .catch(e => {
-                            console.error(e);
+                        .catch(e => console.error(e))
+                        .finally(() => {
                             setLoading(false);
+                            setIsUnitsLoading(false);
                         });
                 }
             }, [loadDashboardData]);
 
             const handleBackToDashboard = async () => {
                 if (isSaving || hasUnsavedChanges || savePromiseRef.current) {
-                    setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
                     try {
                         if (savePromiseRef.current) {
                             await savePromiseRef.current;
@@ -3161,12 +3146,7 @@
                 }
                 setSelModel(null);
                 setIsOrderChanged(false);
-                try {
-                    await storageService.refresh();
-                    await loadDashboardData();
-                } catch (e) {
-                    console.warn("Background refresh silent fail", e);
-                }
+                loadDashboardData();
             };
 
             const handleSyncOvertime = async () => {
@@ -3381,7 +3361,7 @@
                     setAutoSaveCountdown(null);
 
                     setIsSaving(true);
-                    setSaveVerifiedMsg("Veriler e-tabloya gönderiliyor ve doğrulanıyor...");
+                    setSaveVerifiedMsg(null);
 
                     const days = getDaysInRange(rangeStartDate, rangeEndDate);
                     const dayStrings = days.map(d => normalizeDate(d));
@@ -3585,19 +3565,16 @@
                     }
 
                     try {
-                        await storageService.saveAttendance(recs);
-                        await storageService.refresh();
-                        await loadDashboardData();
-                        const freshRecs = storageService.getAttendanceSync();
+                        const freshRecs = await storageService.saveAttendance(recs);
                         setAllRecs(freshRecs);
                         if (onSaveExternal) onSaveExternal(freshRecs);
                         setHasUnsavedChanges(false);
-                        setSaveVerifiedMsg("Veri gönderildi, e-tabloda varlığı doğrulandı ve kaydedildi! ✓");
-                        setTimeout(() => setSaveVerifiedMsg(null), 4000);
+                        setSaveVerifiedMsg("Veriler Kaydedildi ✓");
+                        setTimeout(() => setSaveVerifiedMsg(null), 3000);
                     } catch (e) {
                         console.error("Save Error", e);
-                        setSaveVerifiedMsg(null);
-                        alert('Sistem e-tabloya kaydedilemedi hatası: ' + (e.message || 'E-tabloya yazma/doğrulama başarısız oldu.'));
+                        setSaveVerifiedMsg("Kayıt sırasında hata oluştu");
+                        setTimeout(() => setSaveVerifiedMsg(null), 4000);
                     } finally {
                         setIsSaving(false);
                     }
@@ -3686,7 +3663,6 @@
 
                 // Detaylı Günlük Giriş modeline geçmeden önce kaydedilmemiş değişiklikler veya süren kaydetme varsa bekle
                 if (isSaving || hasUnsavedChanges || savePromiseRef.current) {
-                    setSaveVerifiedMsg("Veri kaydediliyor, lütfen bekleyiniz...");
                     try {
                         if (savePromiseRef.current) {
                             await savePromiseRef.current;
@@ -3873,10 +3849,7 @@
                 }
 
                 try {
-                    await storageService.saveAttendance(allRecordsToSave);
-                    await storageService.refresh();
-                    await loadDashboardData();
-                    const freshRecs = storageService.getAttendanceSync();
+                    const freshRecs = await storageService.saveAttendance(allRecordsToSave);
                     setAllRecs(freshRecs);
 
                     if (detailDays[rangeStartDate] && detailDays[rangeStartDate].status) {
@@ -3890,8 +3863,8 @@
 
                     if (onSaveExternal) onSaveExternal(freshRecs);
                     setHasUnsavedChanges(false);
-                    setSaveVerifiedMsg("Veri gönderildi, e-tabloda varlığı doğrulandı ve kaydedildi! ✓");
-                    setTimeout(() => setSaveVerifiedMsg(null), 4000);
+                    setSaveVerifiedMsg("Veriler Kaydedildi ✓");
+                    setTimeout(() => setSaveVerifiedMsg(null), 3000);
                 } catch(e) {
                     console.error("Detail save error", e);
                     setSaveVerifiedMsg(null);
@@ -4265,30 +4238,28 @@
             if (!selModel) return (
                 <div className="container mx-auto p-4 max-w-5xl space-y-8 animate-fade-in relative">
                     <h1 className="text-3xl font-bold text-white mb-4">Yoklama Takip</h1>
-                    <Card title="Birim Seçiniz">
-                        <div className={`relative transition-all duration-500 min-h-[160px] ${isUnitsLoading ? 'blur-sm opacity-50 pointer-events-none' : 'blur-0 opacity-100'}`}>
-                            {isUnitsLoading && (
-                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-forest-950/60 rounded-xl backdrop-blur-sm">
-                                    <Loader2 className="animate-spin text-teal-400 mb-2" size={32} />
-                                    <span className="text-xs font-bold text-teal-200 tracking-wider uppercase animate-pulse">
-                                        Birim Yoklama Verileri Yükleniyor...
-                                    </span>
-                                </div>
-                            )}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {models.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK' && m !== 'YÖNETİM' && m !== 'İDARİ').map(m => {
-                                    const stat = dashboardStatus[m] || { pilotMissing: false, techMissing: false, groundMissing: false };
-                                    const hasIssue = stat.pilotMissing || stat.techMissing || stat.groundMissing;
-                                    return (
-                                    <button key={m} onClick={() => handleUnitSelection(m)} className={`p-6 rounded border-2 font-bold flex flex-col items-center transition-all group relative overflow-hidden ${!hasIssue ? 'bg-teal-600 border-teal-400 hover:bg-teal-500 text-white' : 'bg-forest-800 border-forest-600 hover:bg-forest-700 text-white'}`}>
-                                        <ModelIcon category={inv.find(a => a.model === m)?.category} model={m} className="mb-2" /> {m}
-                                        {stat.groundMissing && <span className="text-[10px] bg-red-600 px-2 py-0.5 rounded mt-2 animate-pulse w-full block">YOKLAMA GİRİLMEDİ</span>}
-                                        {stat.pilotMissing && <span className="text-[10px] bg-orange-600 px-2 py-0.5 rounded mt-1 animate-pulse w-full block">PİLOT GİRİLMEDİ</span>}
-                                        {stat.techMissing && <span className="text-[10px] bg-red-600 px-2 py-0.5 rounded mt-1 animate-pulse w-full block">TEKNİSYEN GİRİLMEDİ</span>}
-                                    </button>
-                                )})}
-                            </div>
+                    <Card title="Birim Seçiniz" className="relative overflow-hidden">
+                        <div className={`relative grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-500 ${isUnitsLoading ? 'blur-xl pointer-events-none select-none opacity-30 cursor-not-allowed' : ''}`}>
+                            {models.filter(m => m !== 'TEKNİK EKİP' && m !== 'YER DESTEK' && m !== 'YÖNETİM' && m !== 'İDARİ').map(m => {
+                                const stat = dashboardStatus[m] || { pilotMissing: false, techMissing: false, groundMissing: false };
+                                const hasIssue = stat.pilotMissing || stat.techMissing || stat.groundMissing;
+                                return (
+                                <button key={m} disabled={isUnitsLoading} onClick={() => handleUnitSelection(m)} className={`p-6 rounded border-2 font-bold flex flex-col items-center transition-all group relative overflow-hidden ${!hasIssue ? 'bg-teal-600 border-teal-400 hover:bg-teal-500 text-white' : 'bg-forest-800 border-forest-600 hover:bg-forest-700 text-white'} ${isUnitsLoading ? 'cursor-not-allowed' : ''}`}>
+                                    <ModelIcon category={inv.find(a => a.model === m)?.category} model={m} className="mb-2" /> {m}
+                                    {stat.groundMissing && <span className="text-[10px] bg-red-600 px-2 py-0.5 rounded mt-2 animate-pulse w-full block">YOKLAMA GİRİLMEDİ</span>}
+                                    {stat.pilotMissing && <span className="text-[10px] bg-orange-600 px-2 py-0.5 rounded mt-1 animate-pulse w-full block">PİLOT GİRİLMEDİ</span>}
+                                    {stat.techMissing && <span className="text-[10px] bg-red-600 px-2 py-0.5 rounded mt-1 animate-pulse w-full block">TEKNİSYEN GİRİLMEDİ</span>}
+                                </button>
+                            )})}
                         </div>
+                        {isUnitsLoading && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-forest-950/80 rounded z-20 backdrop-blur-md">
+                                <Loader2 className="animate-spin text-teal-400 mb-3" size={40} />
+                                <span className="text-base sm:text-lg font-bold text-teal-300 bg-forest-900/95 px-6 py-3 rounded-xl border border-teal-500/80 shadow-2xl animate-pulse tracking-wide uppercase">
+                                    Veriler Yükleniyor...
+                                </span>
+                            </div>
+                        )}
                     </Card>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -4449,13 +4420,12 @@
                     </Card>
                   
                     <div className="sticky bottom-0 bg-forest-950 p-4 border-t border-forest-700 flex flex-col items-center justify-center gap-2 mt-4 z-40">
-                        {saveVerifiedMsg && (
+                        {saveVerifiedMsg && !isSaving && (
                             <div className={`px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 transition-all duration-300 ${
                                 saveVerifiedMsg.includes('hata') || saveVerifiedMsg.includes('başarısız')
                                     ? 'bg-red-900/90 text-red-200 border border-red-500'
-                                    : 'bg-emerald-800/90 text-emerald-100 border border-emerald-400 animate-bounce'
+                                    : 'bg-emerald-800/90 text-emerald-100 border border-emerald-400'
                             }`}>
-                                {isSaving ? <Loader2 className="animate-spin text-teal-300" size={18} /> : null}
                                 <span>{saveVerifiedMsg}</span>
                             </div>
                         )}
@@ -4473,7 +4443,7 @@
                             {isSaving ? (
                                 <>
                                     <Loader2 className="animate-spin" size={22} />
-                                    <span>E-Tabloda Doğrulanıyor ve Kaydediliyor...</span>
+                                    <span>KAYDEDİLİYOR...</span>
                                 </>
                             ) : hasUnsavedChanges ? (
                                 <>
