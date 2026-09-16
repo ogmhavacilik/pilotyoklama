@@ -1575,6 +1575,7 @@
                 const getPUnit = (pers) => {
                     const nameUpper = (pers.fullName || '').toLocaleUpperCase('tr-TR');
                     if (nameUpper.includes('ŞÜKRAN AKKAN')) return "İDARİ BİRİM";
+                    if (nameUpper.includes('BÜŞRA YILMAZ')) return "İDARİ BİRİM";
                     if (YONETIM_NAMES.includes(pers.fullName)) return "YÖNETİM";
                     const pUnit = normalizeToIdariBirim(pers.unit);
                     if (pUnit && ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"].includes(pUnit)) return pUnit;
@@ -2104,6 +2105,7 @@
                                                                                 const personUnit = (pers) => {
                                                                                     const nameUpper = (pers.fullName || '').toLocaleUpperCase('tr-TR');
                                                                                     if (nameUpper.includes('ŞÜKRAN AKKAN')) return "İDARİ BİRİM";
+                                                                                    if (nameUpper.includes('BÜŞRA YILMAZ')) return "İDARİ BİRİM";
                                                                                     if (YONETIM_NAMES.includes(pers.fullName)) return "YÖNETİM";
                                                                                     const pUnit = normalizeToIdariBirim(pers.unit);
                                                                                     if (pUnit && ["YÖNETİM", "BELL-429", "C-650", "B-360", "T-70", "AT-802", "TEKNİK EKİP", "YER DESTEK", "İDARİ BİRİM"].includes(pUnit)) return pUnit;
@@ -2559,6 +2561,7 @@
             const getPUnit = (p) => {
                 const nameUpper = (p.fullName || '').toLocaleUpperCase('tr-TR');
                 if (nameUpper.includes('ŞÜKRAN AKKAN')) return "İDARİ BİRİM";
+                  if (nameUpper.includes('BÜŞRA YILMAZ')) return "İDARİ BİRİM";
                 if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
                 const pUnit = normalizeToIdariBirim(p.unit);
                 if (pUnit && allUnitsReference.includes(pUnit)) return pUnit;
@@ -3887,6 +3890,7 @@
                     const fUK = (p) => {
                         const nameUpper = (p.fullName || '').toLocaleUpperCase('tr-TR');
                         if (nameUpper.includes('ŞÜKRAN AKKAN')) return "İDARİ BİRİM";
+                         if (nameUpper.includes('BÜŞRA YILMAZ')) return "İDARİ BİRİM";
                         if (YONETIM_NAMES.includes(p.fullName)) return "YÖNETİM";
                         const pUnit = normalizeToIdariBirim(p.unit);
                         if (pUnit && allUnitsReference.includes(pUnit)) return pUnit;
