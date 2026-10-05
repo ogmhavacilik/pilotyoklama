@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UÇUŞ İŞLETME VE EĞİTİM ŞUBE YOKLAMA</title>
+    <meta name="description" content="Uçuş İşletme ve Eğitim Şube Müdürlüğü Yoklama ve Personel Takip Sistemi" />
+    <meta property="og:title" content="UÇUŞ İŞLETME VE EĞİTİM ŞUBE YOKLAMA" />
+    <meta property="og:description" content="Uçuş İşletme ve Eğitim Şube Müdürlüğü Yoklama ve Personel Takip Sistemi" />
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -360,6 +363,90 @@
             }
         });
 
+        const GOOGLE_PUB_CSV_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRC1KvsWTMDmuk1yKFs3p86ibdsOSYWUNYYdbNp9UN5zRleGUl40hwNL3RukH3hR887JrpgQ8oNwpdO/pub";
+
+        const GOOGLE_SHEET_GIDS = {
+            Filo: '1274657481',
+            Personel: '417699309',
+            Yoklama: '234805897'
+        };
+
+        const parseCsvRows = (text) => {
+            if (!text) return [];
+            const lines = [];
+            let row = [];
+            let inQuotes = false;
+            let currentField = "";
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                const nextC = text[i + 1];
+                if (inQuotes) {
+                    if (c === '"' && nextC === '"') {
+                        currentField += '"';
+                        i++;
+                    } else if (c === '"') {
+                        inQuotes = false;
+                    } else {
+                        currentField += c;
+                    }
+                } else {
+                    if (c === '"') {
+                        inQuotes = true;
+                    } else if (c === ',') {
+                        row.push(currentField);
+                        currentField = "";
+                    } else if (c === '\r') {
+                        // ignore CR
+                    } else if (c === '\n') {
+                        row.push(currentField);
+                        currentField = "";
+                        if (row.length > 1 || (row.length === 1 && row[0] !== "")) {
+                            lines.push(row);
+                        }
+                        row = [];
+                    } else {
+                        currentField += c;
+                    }
+                }
+            }
+            if (currentField !== "" || row.length > 0) {
+                row.push(currentField);
+                lines.push(row);
+            }
+            return lines;
+        };
+
+        const csvToObjects = (text) => {
+            const rows = parseCsvRows(text);
+            if (!rows || rows.length < 2) return [];
+            const headers = rows[0].map(h => (h || '').trim());
+            return rows.slice(1).map(r => {
+                const obj = {};
+                headers.forEach((h, idx) => {
+                    if (h) obj[h] = (r[idx] !== undefined ? r[idx].trim() : "");
+                });
+                return obj;
+            });
+        };
+
+        const fetchPublishedCsvSheet = async (sheetName) => {
+            const gid = GOOGLE_SHEET_GIDS[sheetName];
+            if (!gid) throw new Error(`Bilinmeyen sayfa adı: ${sheetName}`);
+            const url = `${GOOGLE_PUB_CSV_BASE}?output=csv&gid=${gid}&_t=${Date.now()}`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            try {
+                const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+                clearTimeout(timeoutId);
+                if (!res.ok) throw new Error(`CSV Yanıt Hatası ${res.status}: ${sheetName}`);
+                const text = await res.text();
+                return csvToObjects(text);
+            } catch (e) {
+                clearTimeout(timeoutId);
+                throw e;
+            }
+        };
+
         const apiCall = async (action, payload = {}, timeoutMs = 120000, retries = 0) => {
             for (let attempt = 0; attempt <= retries; attempt++) {
                 const controller = new AbortController();
@@ -420,45 +507,71 @@
 
                 memoryCache.preloadPromise = (async () => {
                     try {
-                        // Google Apps Script çağrılarını eşzamanlı (paralel) başlatarak bekleme süresini yarıya indir
-                        const [initRes, attRes] = await Promise.allSettled([
-                            apiCall('get_init_data', {}, 75000, 0),
-                            apiCall('get_attendance', {}, 120000, 0)
+                        // KULLANICI TALEBİ: docs.google.com/spreadsheets/d/e/.../pub?output=csv üzerinden
+                        // "Personel", "Yoklama" ve "Filo" verilerini paralel, doğrudan ve ışık hızında çek
+                        const [pRes, yRes, fRes] = await Promise.allSettled([
+                            fetchPublishedCsvSheet('Personel'),
+                            fetchPublishedCsvSheet('Yoklama'),
+                            fetchPublishedCsvSheet('Filo')
                         ]);
 
-                        const data = initRes.status === 'fulfilled' ? initRes.value : null;
-                        const att = attRes.status === 'fulfilled' ? attRes.value : null;
+                        let pData = pRes.status === 'fulfilled' ? pRes.value : null;
+                        let yData = yRes.status === 'fulfilled' ? yRes.value : null;
+                        let fData = fRes.status === 'fulfilled' ? fRes.value : null;
 
-                        if (data && data.aircraft) {
-                            const formattedAC = data.aircraft.map(a => ({ ...a, id: String(a.id) }));
+                        // Eğer CSV çekimi başarısız olursa API yedeğini çağır
+                        if (!pData || !yData) {
+                            try {
+                                const [initRes, attRes] = await Promise.allSettled([
+                                    !pData ? apiCall('get_init_data', {}, 15000, 0) : Promise.resolve(null),
+                                    !yData ? apiCall('get_attendance', {}, 20000, 0) : Promise.resolve(null)
+                                ]);
+                                if (!pData && initRes.status === 'fulfilled' && initRes.value?.personnel) {
+                                    pData = initRes.value.personnel;
+                                }
+                                if (!fData && initRes.status === 'fulfilled' && initRes.value?.aircraft) {
+                                    fData = initRes.value.aircraft;
+                                }
+                                if (!yData && attRes.status === 'fulfilled' && Array.isArray(attRes.value)) {
+                                    yData = attRes.value;
+                                }
+                            } catch (fallbackErr) {
+                                console.warn('API yedek çağrısı atlandı:', fallbackErr.message);
+                            }
+                        }
+
+                        if (fData && Array.isArray(fData) && fData.length > 0) {
+                            const formattedAC = fData.map(a => ({
+                                id: String(a.ID || a.id || ''),
+                                model: a.MODEL || a.model || '',
+                                category: a.CATEGORY || a.category || AircraftCategory.PLANE,
+                                tailNumber: a.TAIL_NUMBER || a.tailNumber || '',
+                                city: a.CITY || a.city || 'Ankara'
+                            }));
                             memoryCache.aircraft = formattedAC;
                             fastCache.set('aircraft', formattedAC);
                         } else if (!memoryCache.aircraft) {
                             memoryCache.aircraft = fastCache.get('aircraft', INITIAL_AIRCRAFT);
                         }
 
-                        if (data && data.personnel) {
-                            let formattedPL = data.personnel.map(p => {
-                                let foundTc = '';
-                                const tcKeys = ['tcNo', 'TC NO', 'TC no', 'tc_no', 'TC', 'tcno', 'TcNo'];
-                                for (const k of tcKeys) {
-                                    if (p[k]) {
-                                        foundTc = String(p[k]);
-                                        break;
-                                    }
-                                }
-                                if (!foundTc) {
-                                    const altKey = Object.keys(p).find(k => k.toUpperCase().includes('TC'));
-                                    if (altKey) foundTc = String(p[altKey]);
-                                }
-
-                                return { 
-                                    ...p, 
-                                    id: String(p.id), 
-                                    photoUrl: fixDriveUrl(p.photoUrl),
-                                    tcNo: foundTc || ''
+                        if (pData && Array.isArray(pData) && pData.length > 0) {
+                            let formattedPL = pData.map(p => {
+                                let foundTc = p['TC NO'] || p.TC_NO || p.tcNo || p.tc_no || p.TC || p.tcno || p.TcNo || '';
+                                return {
+                                    id: String(p.ID || p.id || ''),
+                                    rank: Number(p.RANK || p.rank) || 999,
+                                    fullName: String(p.FULL_NAME || p.fullName || '').trim(),
+                                    role: p.ROLE || p.role || Role.PILOT,
+                                    title: String(p.TITLE || p.title || '').trim(),
+                                    city: String(p.CITY || p.city || 'Ankara').trim(),
+                                    activeFrom: p.ACTIVE_FROM || p.activeFrom || '',
+                                    activeUntil: p.ACTIVE_UNTIL || p.activeUntil || '',
+                                    unit: String(p.UNIT || p.unit || '').trim(),
+                                    photoUrl: fixDriveUrl(p.PHOTO_URL || p.photoUrl),
+                                    tcNo: String(foundTc).trim()
                                 };
-                            });
+                            }).filter(p => p.id && p.fullName);
+
                             INITIAL_PERSONNEL.forEach(initP => {
                                 if (!formattedPL.some(p => p.id === initP.id)) {
                                     formattedPL.push(initP);
@@ -471,13 +584,17 @@
                             memoryCache.personnel = fastCache.get('personnel', INITIAL_PERSONNEL);
                         }
 
-                        if (att && Array.isArray(att)) {
-                            const formattedAtt = att.map(r => ({
-                                ...r,
-                                id: String(r.id || ''),
-                                personId: String(r.personId || '').trim(),
-                                date: normalizeDate(r.date),
-                                status: normalizeAttendanceStatus(r.status)
+                        if (yData && Array.isArray(yData) && yData.length > 0) {
+                            const formattedAtt = yData.map(r => ({
+                                id: String(r.ID || r.id || ''),
+                                personId: String(r.PERSON_ID || r.personId || '').trim(),
+                                date: normalizeDate(r.DATE || r.date),
+                                status: normalizeAttendanceStatus(r.STATUS || r.status),
+                                dutyLocation: String(r.DUTY_LOCATION || r.dutyLocation || '').trim(),
+                                dutyLocationDetail: String(r.DUTY_LOCATION_DETAIL || r.dutyLocationDetail || '').trim(),
+                                dutyType: String(r.DUTY_TYPE || r.dutyType || 'Planlı').trim(),
+                                leaveType: String(r.LEAVE_TYPE || r.leaveType || '').trim(),
+                                note: String(r.NOTE || r.note || '').trim()
                             })).filter(r => r.personId && r.date && r.status && r.status !== '');
 
                             memoryCache.attendance = formattedAtt;
@@ -1259,30 +1376,66 @@
                 return majorityMonth;
             }, []);
 
+            const isSamePerson = useCallback((id1, id2) => {
+                if (!id1 || !id2) return false;
+                const s1 = String(id1).trim().toLowerCase();
+                const s2 = String(id2).trim().toLowerCase();
+                return s1 === s2 || s1.replace(/^p/, '') === s2.replace(/^p/, '');
+            }, []);
+
+            const matchHarcirahCity = useCallback((c1, c2) => {
+                if (!c1 || !c2) return false;
+                return c1.trim().toLocaleUpperCase('tr-TR') === c2.trim().toLocaleUpperCase('tr-TR');
+            }, []);
+
+            const isDutyRecord = useCallback((r, city = null) => {
+                if (!r) return false;
+                const s = String(r.status || '').trim().toLocaleUpperCase('tr-TR');
+                const isDuty = s === AttendanceStatus.DUTY.toLocaleUpperCase('tr-TR') || s.includes('GÖREV') || s.includes('GOREV');
+                if (!isDuty && !r.dutyLocation) return false;
+                if (city) {
+                    return matchHarcirahCity(r.dutyLocation, city);
+                }
+                return Boolean(r.dutyLocation?.trim());
+            }, [matchHarcirahCity]);
+
             const availableHarcirahCities = useMemo(() => {
                 const cities = new Set();
                 allAttendance.forEach(r => {
-                    if (r.status === AttendanceStatus.DUTY && r.dutyLocation?.trim()) {
-                        cities.add(r.dutyLocation.trim().toLocaleUpperCase('tr-TR'));
+                    if (isDutyRecord(r) && r.dutyLocation?.trim()) {
+                        cities.add(r.dutyLocation.trim());
                     }
                 });
-                return Array.from(cities).sort();
-            }, [allAttendance]);
+                return Array.from(cities).sort((a, b) => a.localeCompare(b, 'tr-TR'));
+            }, [allAttendance, isDutyRecord]);
 
-            const getHarcirahCategory = (p) => {
+            const getHarcirahCategory = useCallback((p) => {
+                if (!p) return 'DİĞER';
                 const title = (p.title || '').toLocaleUpperCase('tr-TR');
                 const unit = (p.unit || '').toLocaleUpperCase('tr-TR');
                 
-                if (title.includes('AT-802 TEKNİSYEN')) return 'AT-802';
-                if (title.includes('BELL-429 TEKNİSYEN')) return 'BELL-429';
-                if (title.includes('C-650 TEKNİSYEN')) return 'C-650';
-                if (title.includes('B-360 TEKNİSYEN')) return 'B-360';
-                if (title.includes('T-70 TEKNİSYEN')) return 'T-70';
+                // 1. Doğrudan birim tanımı varsa
+                if (unit) {
+                    if (unit.includes('BELL')) return 'BELL-429';
+                    if (unit.includes('C-650') || unit.includes('C650')) return 'C-650';
+                    if (unit.includes('B-360') || unit.includes('B360')) return 'B-360';
+                    if (unit.includes('T-70') || unit.includes('T70')) return 'T-70';
+                    if (unit.includes('AT-802') || unit.includes('AT802')) return 'AT-802';
+                    if (unit.includes('İDARİ') || unit.includes('IDARI')) return 'İDARİ';
+                }
                 
+                // 2. Unvan veya rolde geçen uçak tipleri ve görevler
+                if (title.includes('BELL-429') || title.includes('BELL 429') || title.includes('BELL')) return 'BELL-429';
+                if (title.includes('C-650') || title.includes('C650')) return 'C-650';
+                if (title.includes('B-360') || title.includes('B360')) return 'B-360';
+                if (title.includes('T-70') || title.includes('T70')) return 'T-70';
+                if (title.includes('AT-802') || title.includes('AT802')) return 'AT-802';
+                
+                if (title.includes('MEMUR') || title.includes('İDARİ') || title.includes('IDARI')) return 'İDARİ';
                 if (unit.includes('TEKNİK EKİP') || title.includes('TEKNİSYEN') || title.includes('TEKNİKER') || title.includes('MÜHENDİS')) return 'TEKNİK EKİPLER';
-                if (p.role === Role.DRIVER || title.includes('ŞÖFÖR')) return 'ŞÖFÖRLER';
+                if (p.role === Role.DRIVER || title.includes('ŞÖFÖR') || title.includes('SOFOR')) return 'ŞÖFÖRLER';
                 return 'DİĞER';
-            };
+            }, []);
 
             const handleHarcirahCitySelect = (city) => {
                 setSelectedHarcirahCity(city);
@@ -1306,16 +1459,14 @@
             const availableHarcirahRanges = useMemo(() => {
                 if (!selectedHarcirahCity || !selectedHarcirahUnit) return [];
                 
-                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
+                const targetPersonnel = plList.filter(p => selectedHarcirahUnit === 'TÜM BİRİMLER' || getHarcirahCategory(p) === selectedHarcirahUnit);
                 const monthKeys = new Set();
                 
-                // Group each person's duties into blocks and determine their majority month
-                unitPersonIds.forEach(pId => {
+                targetPersonnel.forEach(p => {
                     const personDutyDates = allAttendance.filter(r => 
-                        r.personId === pId && 
-                        r.status === AttendanceStatus.DUTY &&
-                        r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR')
-                    ).map(r => r.date).sort();
+                        isSamePerson(r.personId, p.id) && 
+                        isDutyRecord(r, selectedHarcirahCity)
+                    ).map(r => r.date).filter(Boolean).sort();
                     
                     if (personDutyDates.length > 0) {
                         const personBlocks = getMergedHarcirahBlocks(personDutyDates);
@@ -1340,9 +1491,7 @@
                     const year = parseInt(yearStr);
                     const monthIdx = parseInt(monthStr) - 1;
 
-                    // Range start from the first day of that month
                     const start = `${year}-${String(monthIdx + 1).padStart(2, '0')}-01`;
-                    // Range end is the last day of that month
                     const lastDay = new Date(year, monthIdx + 1, 0).getDate();
                     const end = `${year}-${String(monthIdx + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
@@ -1357,20 +1506,19 @@
                 // Sort ranges chronologically (newest first)
                 ranges.sort((a, b) => b.monthKey.localeCompare(a.monthKey));
                 return ranges;
-            }, [selectedHarcirahCity, selectedHarcirahUnit, allAttendance, plList, getMergedHarcirahBlocks, getMajorityMonthOfBlock]);
+            }, [selectedHarcirahCity, selectedHarcirahUnit, allAttendance, plList, getMergedHarcirahBlocks, getMajorityMonthOfBlock, getHarcirahCategory, isSamePerson, isDutyRecord]);
 
             const getMonthSubBlocks = useCallback((monthKey) => {
                 if (!selectedHarcirahCity || !selectedHarcirahUnit) return [];
-                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
+                const targetPersonnel = plList.filter(p => selectedHarcirahUnit === 'TÜM BİRİMLER' || getHarcirahCategory(p) === selectedHarcirahUnit);
                 const allUnitDutyDates = allAttendance.filter(r => 
-                    unitPersonIds.has(r.personId) && 
-                    r.status === AttendanceStatus.DUTY &&
-                    r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR')
+                    targetPersonnel.some(p => isSamePerson(r.personId, p.id)) && 
+                    isDutyRecord(r, selectedHarcirahCity)
                 ).map(r => r.date);
                 const uniqueDates = [...new Set(allUnitDutyDates)].sort();
                 const allBlocks = getMergedHarcirahBlocks(uniqueDates);
                 return allBlocks.filter(b => getMajorityMonthOfBlock(b) === monthKey);
-            }, [selectedHarcirahCity, selectedHarcirahUnit, allAttendance, plList, getMergedHarcirahBlocks, getMajorityMonthOfBlock]);
+            }, [selectedHarcirahCity, selectedHarcirahUnit, allAttendance, plList, getMergedHarcirahBlocks, getMajorityMonthOfBlock, getHarcirahCategory, isSamePerson, isDutyRecord]);
 
             const toggleHarcirahDate = (personId, dateStr) => {
                 setSelectedHarcirahDates(prev => {
@@ -1400,46 +1548,31 @@
             const handleHarcirahRangeSelect = (range) => {
                 setSelectedHarcirahRange(range);
                 
-                const unitPersonIds = new Set(plList.filter(p => getHarcirahCategory(p) === selectedHarcirahUnit).map(p => p.id));
+                const targetPersonnel = plList.filter(p => selectedHarcirahUnit === 'TÜM BİRİMLER' || getHarcirahCategory(p) === selectedHarcirahUnit);
                 
-                // Find personnel who had a block with majority month equal to range.monthKey
-                const personIdsInRange = new Set();
-                unitPersonIds.forEach(pId => {
-                    const personDutyDates = allAttendance.filter(r => 
-                        r.personId === pId && 
-                        r.status === AttendanceStatus.DUTY &&
-                        r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR')
-                    ).map(r => r.date).sort();
-                    
-                    const personBlocks = getMergedHarcirahBlocks(personDutyDates);
-                    const blockInSelectedMonthKey = personBlocks.some(b => getMajorityMonthOfBlock(b) === range.monthKey);
-                    if (blockInSelectedMonthKey) {
-                        personIdsInRange.add(pId);
-                    }
-                });
-
-                const eligible = plList.filter(p => personIdsInRange.has(p.id) && getHarcirahCategory(p) === selectedHarcirahUnit);
-                setHarcirahPersonnel(eligible);
-                
-                // Initialize selected dates for each person
+                const eligible = [];
                 const initialDates = {};
-                eligible.forEach(p => {
-                    const dates = new Set();
+                
+                targetPersonnel.forEach(p => {
                     const personDutyDates = allAttendance.filter(r => 
-                        r.personId === p.id && 
-                        r.status === AttendanceStatus.DUTY && 
-                        r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR')
-                    ).map(r => r.date).sort();
+                        isSamePerson(r.personId, p.id) && 
+                        isDutyRecord(r, selectedHarcirahCity)
+                    ).map(r => r.date).filter(Boolean).sort();
                     
                     const personBlocks = getMergedHarcirahBlocks(personDutyDates);
                     const matchBlocks = personBlocks.filter(b => getMajorityMonthOfBlock(b) === range.monthKey);
-                    
-                    matchBlocks.forEach(b => {
-                        const datesInBlock = getDaysInRange(b.start, b.end).map(d => normalizeDate(d));
-                        datesInBlock.forEach(dStr => dates.add(dStr));
-                    });
-                    initialDates[p.id] = dates;
+                    if (matchBlocks.length > 0) {
+                        eligible.push(p);
+                        const dates = new Set();
+                        matchBlocks.forEach(b => {
+                            const datesInBlock = getDaysInRange(b.start, b.end).map(d => normalizeDate(d));
+                            datesInBlock.forEach(dStr => dates.add(dStr));
+                        });
+                        initialDates[p.id] = dates;
+                    }
                 });
+
+                setHarcirahPersonnel(eligible);
                 setSelectedHarcirahDates(initialDates);
                 setSelectedHarcirahPersonnelIds(new Set(eligible.map(p => p.id))); // Auto-select all eligible by default
                 
@@ -1463,9 +1596,8 @@
                             const nextDates = { ...prevDates };
                             const dates = new Set();
                             const personDutyDates = allAttendance.filter(r => 
-                                r.personId === id && 
-                                r.status === AttendanceStatus.DUTY && 
-                                r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR')
+                                isSamePerson(r.personId, id) && 
+                                isDutyRecord(r, selectedHarcirahCity)
                             ).map(r => r.date).sort();
                             
                             const personBlocks = getMergedHarcirahBlocks(personDutyDates);
@@ -1519,9 +1651,8 @@
                     harcirahPersonnel.forEach(p => {
                         const dates = new Set();
                         const personDutyDates = allAttendance.filter(r => 
-                            r.personId === p.id && 
-                            r.status === AttendanceStatus.DUTY && 
-                            r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR')
+                            isSamePerson(r.personId, p.id) && 
+                            isDutyRecord(r, selectedHarcirahCity)
                         ).map(r => r.date).sort();
                         
                         const personBlocks = getMergedHarcirahBlocks(personDutyDates);
@@ -1608,7 +1739,8 @@
                     });
 
                     // Signature Block
-                    const rank1Person = plList.find(p => p.rank === 1) || { fullName: 'Murat AKMEŞE', title: 'Hava Araçları Bakım ve Teknik Şube Müdürü' };
+                    const rank1Person = plList.find(p => p.rank === 1) || { fullName: 'MEHMET SEFA YÜCEDAĞ', title: 'Uçuş İşletme ve Eğitim Şube Müdürü' };
+                    const sigTitle = rank1Person.title?.toLocaleUpperCase('tr-TR').includes('MÜDÜR') ? rank1Person.title : 'Uçuş İşletme ve Eğitim Şube Müdürü';
                     
                     // Signature block starts 4 rows below the last data row
                     const sigStartRow = lastDataRowIndex + 4;
@@ -1616,7 +1748,7 @@
                     
                     worksheet.mergeCells(`F${sigStartRow}:G${sigEndRow}`);
                     const sigCell = worksheet.getCell(`F${sigStartRow}`);
-                    sigCell.value = `${rank1Person.fullName}\nHava Araçları Bakım ve Teknik Şube Müdürü`;
+                    sigCell.value = `${rank1Person.fullName}\n${sigTitle}`;
                     sigCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                     sigCell.font = { bold: true };
 
@@ -2011,15 +2143,30 @@
                                                 <div className="space-y-2 animate-slide-down">
                                                     <label className="text-xs font-bold text-forest-400 uppercase">2. Birim Seçiniz</label>
                                                     <div className="space-y-2">
-                                                        {['AT-802', 'BELL-429', 'C-650', 'B-360', 'T-70', 'TEKNİK EKİPLER', 'ŞÖFÖRLER', 'DİĞER'].map(cat => (
-                                                            <button 
-                                                                key={cat} 
-                                                                onClick={() => handleHarcirahUnitSelect(cat)}
-                                                                className={`w-full p-2 text-left text-sm rounded border ${selectedHarcirahUnit === cat ? 'bg-forest-500 border-forest-400 text-white' : 'bg-forest-950 border-forest-700 text-forest-300 hover:border-forest-500'}`}
-                                                            >
-                                                                {cat}
-                                                            </button>
-                                                        ))}
+                                                        {['BELL-429', 'C-650', 'B-360', 'T-70', 'AT-802', 'İDARİ', 'TEKNİK EKİPLER', 'ŞÖFÖRLER', 'DİĞER', 'TÜM BİRİMLER'].map(cat => {
+                                                            const dutyCount = plList.filter(p => {
+                                                                if (cat !== 'TÜM BİRİMLER' && getHarcirahCategory(p) !== cat) return false;
+                                                                return allAttendance.some(r => isSamePerson(r.personId, p.id) && isDutyRecord(r, selectedHarcirahCity));
+                                                            }).length;
+                                                            return (
+                                                                <button 
+                                                                    key={cat} 
+                                                                    onClick={() => handleHarcirahUnitSelect(cat)}
+                                                                    className={`w-full p-2.5 text-left text-sm rounded-lg border flex justify-between items-center transition-all ${selectedHarcirahUnit === cat ? 'bg-forest-500 border-forest-400 text-white shadow-md' : 'bg-forest-950 border-forest-700 text-forest-300 hover:border-forest-500'}`}
+                                                                >
+                                                                    <span className="font-semibold">{cat}</span>
+                                                                    {dutyCount > 0 ? (
+                                                                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                                                            {dutyCount} Personel
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-forest-900/60 text-forest-500 border border-forest-800">
+                                                                            0
+                                                                        </span>
+                                                                    )}
+                                                                </button>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </div>
                                             )}
@@ -2077,10 +2224,9 @@
                                                     
                                                     // Load all duty dates of this person in this city across all times, to merge into contiguous blocks
                                                     const allPersonDutyDates = allAttendance.filter(r => 
-                                                        r.personId === p.id && 
-                                                        r.status === AttendanceStatus.DUTY && 
-                                                        r.dutyLocation && r.dutyLocation.trim().toLocaleUpperCase('tr-TR') === selectedHarcirahCity.trim().toLocaleUpperCase('tr-TR')
-                                                    ).map(r => r.date).sort();
+                                                        isSamePerson(r.personId, p.id) && 
+                                                        isDutyRecord(r, selectedHarcirahCity)
+                                                    ).map(r => r.date).filter(Boolean).sort();
                                                     
                                                     const allPersonBlocks = getMergedHarcirahBlocks(allPersonDutyDates);
                                                     // Keep only blocks whose majority month is the selected range's monthKey
@@ -2449,7 +2595,7 @@
                                         </thead>
                                         <tbody>
                                             {plList
-                                                .filter(p => getHarcirahCategory(p) === selectedHarcirahUnit)
+                                                .filter(p => selectedHarcirahUnit === 'TÜM BİRİMLER' || getHarcirahCategory(p) === selectedHarcirahUnit)
                                                 .map(p => (
                                                     <tr key={p.id} className="hover:bg-forest-800/30 transition-colors">
                                                         <td className="p-2 border border-forest-700 font-medium sticky left-0 bg-forest-900 z-[5]">{p.fullName}</td>
@@ -2463,7 +2609,7 @@
                                                                 curr.setDate(curr.getDate() + 1);
                                                             }
                                                             return dates.map(d => {
-                                                                const rec = attendancePreviewData.records.find(r => r.personId === p.id && r.date === d);
+                                                                const rec = attendancePreviewData.records.find(r => isSamePerson(r.personId, p.id) && r.date === d);
                                                                 let statusColor = "text-forest-600";
                                                                 let statusText = "-";
                                                                 if (rec) {
@@ -3223,25 +3369,19 @@
                                 });
                                 statusMap['İDARİ'] = {
                                     groundMissing: relevantPersonnel.length > 0 && missingCount,
-                                    pilotMissing: false,
-                                    techMissing: false
+                                    pilotMissing: false
                                 };
                             } else {
-                                const pilots = relevantPersonnel.filter(p => p.role === Role.PILOT || (p.title && p.title.toLocaleUpperCase('tr-TR').includes('PİLOT')));
-                                const techs = relevantPersonnel.filter(p => !pilots.includes(p));
-
                                 const checkExists = (persList) => persList.length > 0 && persList.some(p => {
                                     const pid = String(p.id).trim();
                                     const clean = pid.replace(/^p/i, '');
                                     return todayRecordPersonIds.has(pid) || todayRecordPersonIds.has(clean) || todayRecordPersonIds.has('p' + clean);
                                 });
 
-                                const pilotDataExists = checkExists(pilots);
-                                const techDataExists = checkExists(techs);
+                                const dataExists = checkExists(relevantPersonnel);
 
                                 statusMap[m] = {
-                                    pilotMissing: pilots.length > 0 && !pilotDataExists,
-                                    techMissing: techs.length > 0 && !techDataExists,
+                                    pilotMissing: relevantPersonnel.length > 0 && !dataExists,
                                     groundMissing: false
                                 };
                             }
@@ -3492,27 +3632,12 @@
                             includeWeekend: hasWeekendRecord
                         };
                     } else {
-                        const hist = allRecs.filter(x => x.personId === p.id && x.date < referenceDate && x.status && x.status !== '').sort((a, b) => b.date.localeCompare(a.date))[0];
+                        // KULLANICI KURALI: Görev geçmiş tarihlerden ileriye ASLA otomatik aktarılmaz!
+                        // Kayıt girilmemiş günlerde hafta sonu ise undefined, hafta içi ise varsayılan olarak MESAİ gösterilir.
                         if (isWe) {
                             next[p.id] = { status: undefined };
                         } else {
-                            if (hist && referenceDate >= getTodayString()) {
-                                // KRİTİK DÜZELTME: İzin, Rapor gibi durumların sonsuza kadar taşınmasını engelle
-                                const carryOverStatuses = [AttendanceStatus.PRESENT, AttendanceStatus.DUTY];
-                                if (carryOverStatuses.includes(hist.status)) {
-                                    next[p.id] = {
-                                        ...hist,
-                                        leaveType: hist.leaveType || LeaveType.DAILY,
-                                        dutyType: hist.dutyType || DutyType.PLANNED,
-                                        includeWeekend: hasWeekendRecord
-                                    };
-                                } else {
-                                    // İzin, Rapor, Kurs vb. durumlar bittiyse otomatik olarak Mesai'ye dön
-                                    next[p.id] = { status: AttendanceStatus.PRESENT, includeWeekend: hasWeekendRecord };
-                                }
-                            } else {
-                                next[p.id] = { status: AttendanceStatus.PRESENT, includeWeekend: hasWeekendRecord };
-                            }
+                            next[p.id] = { status: AttendanceStatus.PRESENT, includeWeekend: false };
                         }
                     }
                 });
@@ -3572,12 +3697,13 @@
                 let counter = 0;
                 const timestamp = Date.now();
 
+                const lastDay = days[days.length - 1];
+                const lastDayOfWeek = lastDay ? lastDay.getDay() : -1;
+
                 days.forEach(dateObj => {
                     const dStr = normalizeDate(dateObj);
                     const dayOfWeek = dateObj.getDay();
                     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                    
-                    const isFriday = dayOfWeek === 5;
 
                     people.forEach(p => {
                         if (personsToSkip.has(p.id)) return; // Skip blurred rows
@@ -3598,6 +3724,10 @@
 
                         if (!s?.status) return;
 
+                        // KULLANICI KURALI:
+                        // Seçilen aralıktaki Cumartesi ve Pazar günleri:
+                        // Eğer hafta sonu dahil işaretlenmişse (includeWeekend: true), görev yazılır.
+                        // Eğer hafta sonu dahil işaretlenmemişse (includeWeekend: false), hafta sonuna görev yazılmaz!
                         if (isWeekend && isWeeklyMode && !s.includeWeekend) {
                             const existingRec = allRecs.find(r => r.personId === p.id && r.date === dStr);
                             if (existingRec) {
@@ -3611,41 +3741,6 @@
                         }
 
                         const dType = s.dutyType || DutyType.PLANNED;
-                        
-                        const isPlannedDuty = s.status === AttendanceStatus.DUTY && dType === DutyType.PLANNED;
-                        const isOvertimeLeave = s.status === AttendanceStatus.LEAVE && s.leaveType === LeaveType.OVERTIME;
-                        
-                        const shouldIncludeWeekend = isPlannedDuty || isOvertimeLeave;
-
-                        if (isFriday) {
-                             const satDate = new Date(dateObj); satDate.setDate(satDate.getDate() + 1); const satStr = normalizeDate(satDate);
-                             const sunDate = new Date(dateObj); sunDate.setDate(sunDate.getDate() + 2); const sunStr = normalizeDate(sunDate);
-                             
-                             const existingSat = allRecs.find(r => r.personId === p.id && r.date === satStr && r.status && r.status !== '');
-                             const existingSun = allRecs.find(r => r.personId === p.id && r.date === sunStr && r.status && r.status !== '');
-                             
-                             const hasWeekendJunk = (existingSat && existingSat.status && existingSat.status !== '') || 
-                                                     (existingSun && existingSun.status && existingSun.status !== '');
-
-                             if (hasWeekendJunk && (!shouldIncludeWeekend || !s.includeWeekend)) {
-                                 counter++;
-                                 recs.push({
-                                    id: `${timestamp}-${counter}-cleanup-sat-${p.id}`,
-                                    date: satStr,
-                                    personId: p.id,
-                                    status: '', 
-                                    aircraftTypeSnapshot: selModel || undefined
-                                 });
-                                 counter++;
-                                 recs.push({
-                                    id: `${timestamp}-${counter}-cleanup-sun-${p.id}`,
-                                    date: sunStr,
-                                    personId: p.id,
-                                    status: '', 
-                                    aircraftTypeSnapshot: selModel || undefined
-                                 });
-                             }
-                        }
 
                         counter++;
                         recs.push({
@@ -3661,24 +3756,36 @@
                             includeWeekend: !!s.includeWeekend,
                             aircraftTypeSnapshot: selModel || undefined
                         });
+                    });
+                });
 
-                        if (dayOfWeek === 5 && shouldIncludeWeekend && s.includeWeekend) {
-                            const satDate = new Date(dateObj);
-                            satDate.setDate(satDate.getDate() + 1);
-                            const satStr = normalizeDate(satDate);
+                // KULLANICI KURALI:
+                // "örnek pazartesi cuma girildi, hafta sonu dahil seçilirse o zaman dışına geçer sonunu da dahil eder"
+                // Eğer seçilen tarih aralığı Cuma günü bitiyorsa ve "Hafta sonu dahil" işaretli personeller varsa,
+                // o personeller için hemen ardındaki Cumartesi ve Pazar günleri de göreve dahil edilir.
+                const extendedWeekendDates = new Set();
+                if (lastDayOfWeek === 5) {
+                    const satDate = new Date(lastDay); satDate.setDate(satDate.getDate() + 1);
+                    const sunDate = new Date(lastDay); sunDate.setDate(sunDate.getDate() + 2);
+                    const satStr = normalizeDate(satDate);
+                    const sunStr = normalizeDate(sunDate);
 
-                            const sunDate = new Date(dateObj);
-                            sunDate.setDate(sunDate.getDate() + 2);
-                            const sunStr = normalizeDate(sunDate);
+                    if (!dayStrings.includes(satStr)) extendedWeekendDates.add(satStr);
+                    if (!dayStrings.includes(sunStr)) extendedWeekendDates.add(sunStr);
 
-                            const isSatInSelection = dayStrings.includes(satStr);
-                            const isSunInSelection = dayStrings.includes(sunStr);
-
-                            if (!isSatInSelection) {
+                    people.forEach(p => {
+                        if (personsToSkip.has(p.id)) return;
+                        const s = att[p.id];
+                        if (!s || !s.status || s.status === '') return;
+                        
+                        if (s.includeWeekend && (s.status === AttendanceStatus.DUTY || s.status === AttendanceStatus.LEAVE)) {
+                            const dType = s.dutyType || DutyType.PLANNED;
+                            [satStr, sunStr].forEach(extraDate => {
                                 counter++;
+                                const existingRec = allRecs.find(r => r.personId === p.id && r.date === extraDate);
                                 recs.push({
-                                    id: `${timestamp}-${counter}-${p.id}`,
-                                    date: satStr,
+                                    id: (existingRec && existingRec.id) ? existingRec.id : `${timestamp}-${counter}-${p.id}`,
+                                    date: extraDate,
                                     personId: p.id,
                                     status: s.status,
                                     dutyLocation: s.dutyLocation,
@@ -3689,12 +3796,24 @@
                                     includeWeekend: true,
                                     aircraftTypeSnapshot: selModel || undefined
                                 });
-                            }
-
-                            if (!isSunInSelection) {
+                            });
+                        }
+                    });
+                } else if (lastDayOfWeek === 6) {
+                    const sunDate = new Date(lastDay); sunDate.setDate(sunDate.getDate() + 1);
+                    const sunStr = normalizeDate(sunDate);
+                    if (!dayStrings.includes(sunStr)) {
+                        extendedWeekendDates.add(sunStr);
+                        people.forEach(p => {
+                            if (personsToSkip.has(p.id)) return;
+                            const s = att[p.id];
+                            if (!s || !s.status || s.status === '') return;
+                            if (s.includeWeekend && (s.status === AttendanceStatus.DUTY || s.status === AttendanceStatus.LEAVE)) {
+                                const dType = s.dutyType || DutyType.PLANNED;
                                 counter++;
+                                const existingRec = allRecs.find(r => r.personId === p.id && r.date === sunStr);
                                 recs.push({
-                                    id: `${timestamp}-${counter}-${p.id}`,
+                                    id: (existingRec && existingRec.id) ? existingRec.id : `${timestamp}-${counter}-${p.id}`,
                                     date: sunStr,
                                     personId: p.id,
                                     status: s.status,
@@ -3707,11 +3826,16 @@
                                     aircraftTypeSnapshot: selModel || undefined
                                 });
                             }
-                        }
-                    });
-                });
+                        });
+                    }
+                }
 
-                if (recs.length === 0) {
+                // KULLANICI KURALI: 
+                // Seçilen tarih aralığı (dayStrings) ve sadece Cuma/Cumartesi bitiminde "Hafta sonu dahil" seçilmişse
+                // bu hafta sonu günleri haricinde ASLA başka tarihe veri gönderilemez/sızamaz!
+                const boundedRecs = recs.filter(r => dayStrings.includes(r.date) || extendedWeekendDates.has(r.date));
+
+                if (boundedRecs.length === 0) {
                     setIsSaving(false);
                     setHasUnsavedChanges(false);
                     if (!isAutoSave) {
@@ -3724,7 +3848,7 @@
                 }
 
                 try {
-                    await storageService.saveAttendance(recs);
+                    await storageService.saveAttendance(boundedRecs);
                     const freshRecs = storageService.getAttendanceSync();
                     setAllRecs(freshRecs);
                     if (onSaveExternal) onSaveExternal(freshRecs);
@@ -3865,15 +3989,12 @@
                             includeWeekend: att[person.id].includeWeekend
                         };
                     } else {
-                        const prevDate = new Date(d); prevDate.setDate(prevDate.getDate() - 1);
-                        const prevStr = normalizeDate(prevDate);
-                        const prevRec = initialStates[prevStr] || freshRecs.find(rec => rec.personId === person.id && rec.date === prevStr && rec.status && rec.status !== '');
-
+                        // KULLANICI KURALI: Görev geçmiş tarihlerden ileriye ASLA otomatik aktarılmaz!
+                        // Kayıt girilmemiş günlerde hafta sonu ise undefined, hafta içi ise varsayılan olarak MESAİ gösterilir.
                         if (isWe) {
                             initialStates[dStr] = { status: undefined };
                         } else {
-                            if (prevRec) initialStates[dStr] = { ...prevRec, id: undefined };
-                            else initialStates[dStr] = { status: AttendanceStatus.PRESENT };
+                            initialStates[dStr] = { status: AttendanceStatus.PRESENT };
                         }
                     }
                 });
@@ -3889,15 +4010,19 @@
                     };
 
                     const dObj = new Date(dateStr);
-                    if (dObj.getDay() === 5 && next[dateStr].status === AttendanceStatus.DUTY) {
+                    if (dObj.getDay() === 5) {
                         const satDate = new Date(dObj); satDate.setDate(satDate.getDate() + 1); const satStr = normalizeDate(satDate);
                         const sunDate = new Date(dObj); sunDate.setDate(sunDate.getDate() + 2); const sunStr = normalizeDate(sunDate);
                         
-                        if (next[satStr]) {
-                            next[satStr] = { ...next[satStr], [field]: value };
-                        }
-                        if (next[sunStr]) {
-                            next[sunStr] = { ...next[sunStr], [field]: value };
+                        const isDuty = next[dateStr]?.status === AttendanceStatus.DUTY;
+                        const incWe = field === 'includeWeekend' ? !!value : !!next[dateStr]?.includeWeekend;
+
+                        if (isDuty && incWe) {
+                            if (next[satStr]) next[satStr] = { ...next[dateStr], date: satStr };
+                            if (next[sunStr]) next[sunStr] = { ...next[dateStr], date: sunStr };
+                        } else if (field === 'includeWeekend' && !value) {
+                            if (next[satStr]) next[satStr] = { status: undefined, date: satStr };
+                            if (next[sunStr]) next[sunStr] = { status: undefined, date: sunStr };
                         }
                     }
                     return next;
@@ -3921,15 +4046,16 @@
                     };
 
                     const dObj = new Date(dateStr);
-                    if (dObj.getDay() === 5 && status === AttendanceStatus.DUTY) {
+                    if (dObj.getDay() === 5) {
                         const satDate = new Date(dObj); satDate.setDate(satDate.getDate() + 1); const satStr = normalizeDate(satDate);
                         const sunDate = new Date(dObj); sunDate.setDate(sunDate.getDate() + 2); const sunStr = normalizeDate(sunDate);
                         
-                        if (next[satStr]) {
-                            next[satStr] = { ...next[dateStr], date: satStr };
-                        }
-                        if (next[sunStr]) {
-                            next[sunStr] = { ...next[dateStr], date: sunStr };
+                        if (status === AttendanceStatus.DUTY && next[dateStr]?.includeWeekend) {
+                            if (next[satStr]) next[satStr] = { ...next[dateStr], date: satStr };
+                            if (next[sunStr]) next[sunStr] = { ...next[dateStr], date: sunStr };
+                        } else if (status !== AttendanceStatus.DUTY) {
+                            if (next[satStr] && next[satStr].status === AttendanceStatus.DUTY) next[satStr] = { status: undefined, date: satStr };
+                            if (next[sunStr] && next[sunStr].status === AttendanceStatus.DUTY) next[sunStr] = { status: undefined, date: sunStr };
                         }
                     }
 
@@ -4870,14 +4996,13 @@
                     <Card title="Birim Seçiniz">
                         <div className={`relative grid grid-cols-2 md:grid-cols-3 gap-4 transition-all duration-300 ${isUnitsLoading && models.length === 0 ? 'blur-md pointer-events-none opacity-40' : ''}`}>
                             {models.map(m => {
-                                const stat = dashboardStatus[m] || { pilotMissing: false, techMissing: false, groundMissing: false };
-                                const hasIssue = stat.pilotMissing || stat.techMissing || stat.groundMissing;
+                                const stat = dashboardStatus[m] || { pilotMissing: false, groundMissing: false };
+                                const hasIssue = stat.pilotMissing || stat.groundMissing;
                                 return (
                                 <button key={m} onClick={() => handleUnitSelection(m)} className={`p-6 rounded border-2 font-bold flex flex-col items-center transition-all group relative overflow-hidden ${!hasIssue ? 'bg-teal-600 border-teal-400 hover:bg-teal-500 text-white' : 'bg-forest-800 border-forest-600 hover:bg-forest-700 text-white'}`}>
                                     <ModelIcon category={inv.find(a => a.model === m)?.category} model={m} className="mb-2" /> {m}
                                     {stat.groundMissing && <span className="text-[10px] bg-red-600 px-2 py-0.5 rounded mt-2 animate-pulse w-full block">YOKLAMA GİRİLMEDİ</span>}
                                     {stat.pilotMissing && <span className="text-[10px] bg-orange-600 px-2 py-0.5 rounded mt-1 animate-pulse w-full block">PİLOT GİRİLMEDİ</span>}
-                                    {stat.techMissing && <span className="text-[10px] bg-red-600 px-2 py-0.5 rounded mt-1 animate-pulse w-full block">TEKNİSYEN GİRİLMEDİ</span>}
                                 </button>
                             )})}
                         </div>
