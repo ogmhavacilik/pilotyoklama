@@ -184,14 +184,6 @@
         const INITIAL_PERSONNEL = [];
 
         // --- UTILS ---
-        const toTitleCase = (str) => {
-            if (!str) return '';
-            return str.toLocaleLowerCase('tr-TR').split(' ').map(word => {
-                if (!word) return '';
-                return word.charAt(0).toLocaleUpperCase('tr-TR') + word.slice(1);
-            }).join(' ');
-        };
-
         const fixDriveUrl = (url) => {
             if (!url) return '';
             const driveMatch = url.match(/[-\w]{25,}/);
@@ -249,10 +241,10 @@
         const normalizeAttendanceStatus = (status) => {
             if (!status) return '';
             const s = String(status).trim().toLocaleUpperCase('tr-TR');
-            if (s.includes('GÖREV') || s.includes('GOREV') || s.includes('PLANLI') || s.includes('PLANSIZ')) return AttendanceStatus.DUTY;
             if (s.includes('MESA') || s.includes('MEVCUT') || s.includes('HAZIR')) return AttendanceStatus.PRESENT;
             if (s.includes('İDARİ İZİN') || s.includes('IDARI IZIN')) return AttendanceStatus.PUBLIC_HOLIDAY;
             if (s.includes('İZİN') || s.includes('IZIN') || s.includes('F.M.İ') || s.includes('FMİ')) return AttendanceStatus.LEAVE;
+            if (s.includes('GÖREV') || s.includes('GOREV')) return AttendanceStatus.DUTY;
             if (s.includes('KURS')) return AttendanceStatus.COURSE;
             if (s.includes('RAPOR')) return AttendanceStatus.SICK;
             if (s.includes('HASTANE')) return AttendanceStatus.HOSPITAL;
@@ -266,10 +258,6 @@
             const rawTitle = (title || role || '').toString();
             const t = rawTitle.toLocaleUpperCase('tr-TR');
             
-            if (t.includes('PİLOT') || t.includes('PILOT')) {
-                return 'Pilot';
-            }
-
             // 1. Uçuş Teknisyeni Logic (Specific Aircraft Technicians)
             if (t.includes('AT-802') || 
                 t.includes('T-70') || 
@@ -328,11 +316,8 @@
             }
         };
 
-        try { localStorage.removeItem('ogm_fast_personnel'); } catch(e) {}
-
         const fastCache = {
             get: (key, fallback) => {
-                if (key === 'personnel') return fallback;
                 try {
                     const d = localStorage.getItem('ogm_fast_' + key);
                     return d ? JSON.parse(d) : fallback;
@@ -341,7 +326,6 @@
                 }
             },
             set: (key, val) => {
-                if (key === 'personnel') return;
                 try {
                     if (key === 'attendance' && Array.isArray(val)) {
                         // Keep entire dataset in IndexedDB (no quota limitation)
@@ -359,7 +343,7 @@
         };
 
         const cachedAircraft = fastCache.get('aircraft', null) || INITIAL_AIRCRAFT;
-        const cachedPersonnel = INITIAL_PERSONNEL;
+        const cachedPersonnel = fastCache.get('personnel', null) || INITIAL_PERSONNEL;
         const cachedAttendance = fastCache.get('attendance', null) || [];
 
         const memoryCache = {
@@ -601,25 +585,17 @@
                         }
 
                         if (yData && Array.isArray(yData) && yData.length > 0) {
-                            const formattedAtt = yData.map(r => {
-                                let st = normalizeAttendanceStatus(r.STATUS || r.status);
-                                const dutyLoc = String(r.DUTY_LOCATION || r.dutyLocation || '').trim();
-                                const dutyTypeVal = String(r.DUTY_TYPE || r.dutyType || '').trim();
-                                if ((dutyLoc !== '' || dutyTypeVal !== '') && (!st || st === AttendanceStatus.PRESENT)) {
-                                    st = AttendanceStatus.DUTY;
-                                }
-                                return {
-                                    id: String(r.ID || r.id || ''),
-                                    personId: String(r.PERSON_ID || r.personId || '').trim(),
-                                    date: normalizeDate(r.DATE || r.date),
-                                    status: st,
-                                    dutyLocation: dutyLoc,
-                                    dutyLocationDetail: String(r.DUTY_LOCATION_DETAIL || r.dutyLocationDetail || '').trim(),
-                                    dutyType: dutyTypeVal || 'Planlı',
-                                    leaveType: String(r.LEAVE_TYPE || r.leaveType || '').trim(),
-                                    note: String(r.NOTE || r.note || '').trim()
-                                };
-                            }).filter(r => r.personId && r.date && r.status && r.status !== '');
+                            const formattedAtt = yData.map(r => ({
+                                id: String(r.ID || r.id || ''),
+                                personId: String(r.PERSON_ID || r.personId || '').trim(),
+                                date: normalizeDate(r.DATE || r.date),
+                                status: normalizeAttendanceStatus(r.STATUS || r.status),
+                                dutyLocation: String(r.DUTY_LOCATION || r.dutyLocation || '').trim(),
+                                dutyLocationDetail: String(r.DUTY_LOCATION_DETAIL || r.dutyLocationDetail || '').trim(),
+                                dutyType: String(r.DUTY_TYPE || r.dutyType || 'Planlı').trim(),
+                                leaveType: String(r.LEAVE_TYPE || r.leaveType || '').trim(),
+                                note: String(r.NOTE || r.note || '').trim()
+                            })).filter(r => r.personId && r.date && r.status && r.status !== '');
 
                             memoryCache.attendance = formattedAtt;
                             fastCache.set('attendance', formattedAtt);
@@ -631,7 +607,7 @@
                     } catch (e) {
                         console.warn("Canlı veri senkronizasyonu uyarısı (Önbellek kullanılıyor):", e.message || e);
                         if (!memoryCache.aircraft) memoryCache.aircraft = fastCache.get('aircraft', INITIAL_AIRCRAFT);
-                        memoryCache.personnel = INITIAL_PERSONNEL;
+                        if (!memoryCache.personnel) memoryCache.personnel = fastCache.get('personnel', INITIAL_PERSONNEL);
                         if (!memoryCache.attendance) memoryCache.attendance = fastCache.get('attendance', []);
                         memoryCache.loaded = true;
                     } finally {
@@ -1745,9 +1721,9 @@
 
                             const rowData = [
                                 blockCounter++,
-                                p.fullName.replace(/\s*\(.*\)/, '').toLocaleUpperCase('tr-TR'),
+                                p.fullName.replace(/\s*\(.*\)/, ''),
                                 p.tcNo || '',
-                                getDisplayTitle(p.title, p.role),
+                                (p.title || '').toLocaleUpperCase('tr-TR').includes('PİLOT') ? 'Pilot' : getDisplayTitle(p.title, p.role),
                                 selectedHarcirahCity,
                                 hStart.toLocaleDateString('tr-TR'),
                                 hEnd.toLocaleDateString('tr-TR'),
@@ -1762,17 +1738,17 @@
                         });
                     });
 
-                    // Force Cengiz Özdemir signature
-                    const cengizName = 'Cengiz';
-                    const cengizSurname = 'ÖZDEMİR';
-                    const sigTitle = 'Kaptan Pilot\nUçuş İşletme ve Eğitim Şube Müdürü';
+                    // Signature Block
+                    const rank1Person = plList.find(p => p.rank === 1) || { fullName: 'MEHMET SEFA YÜCEDAĞ', title: 'Uçuş İşletme ve Eğitim Şube Müdürü' };
+                    const sigTitle = rank1Person.title?.toLocaleUpperCase('tr-TR').includes('MÜDÜR') ? rank1Person.title : 'Uçuş İşletme ve Eğitim Şube Müdürü';
                     
+                    // Signature block starts 4 rows below the last data row
                     const sigStartRow = lastDataRowIndex + 4;
-                    const sigEndRow = sigStartRow + 3;
+                    const sigEndRow = sigStartRow + 3; // 4 rows total
+                    
                     worksheet.mergeCells(`F${sigStartRow}:G${sigEndRow}`);
                     const sigCell = worksheet.getCell(`F${sigStartRow}`);
-                    
-                    sigCell.value = `${cengizName} ${cengizSurname}\n${sigTitle}`;
+                    sigCell.value = `Cengiz ÖZDEMİR\nKaptan Pilot\nUçuş İşletme ve Eğitim Şube Müdürü`;
                     sigCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                     sigCell.font = { bold: true };
 
