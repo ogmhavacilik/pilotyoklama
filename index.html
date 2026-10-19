@@ -1745,7 +1745,7 @@
 
                             const rowData = [
                                 blockCounter++,
-                                toTitleCase(p.fullName),
+                                p.fullName.replace(/\s*\(.*\)/, '').toLocaleUpperCase('tr-TR'),
                                 p.tcNo || '',
                                 getDisplayTitle(p.title, p.role),
                                 selectedHarcirahCity,
@@ -1762,20 +1762,17 @@
                         });
                     });
 
-                    // Signature Block
-                    let rank1Person = plList.find(p => p.rank === 1);
-                    if (!rank1Person || (rank1Person.fullName && rank1Person.fullName.toLocaleUpperCase('tr-TR').includes('RIFAT'))) {
-                        rank1Person = { fullName: 'CENGİZ ÖZDEMİR', title: 'Uçuş İşletme ve Eğitim Şube Müdürü' };
-                    }
-                    const sigTitle = rank1Person.title?.toLocaleUpperCase('tr-TR').includes('MÜDÜR') ? rank1Person.title : 'Uçuş İşletme ve Eğitim Şube Müdürü';
+                    // Force Cengiz Özdemir signature
+                    const cengizName = 'Cengiz';
+                    const cengizSurname = 'ÖZDEMİR';
+                    const sigTitle = 'Kaptan Pilot\nUçuş İşletme ve Eğitim Şube Müdürü';
                     
-                    // Signature block starts 4 rows below the last data row
                     const sigStartRow = lastDataRowIndex + 4;
-                    const sigEndRow = sigStartRow + 3; // 4 rows total
-                    
+                    const sigEndRow = sigStartRow + 3;
                     worksheet.mergeCells(`F${sigStartRow}:G${sigEndRow}`);
                     const sigCell = worksheet.getCell(`F${sigStartRow}`);
-                    sigCell.value = `${toTitleCase(rank1Person.fullName)}\n${sigTitle}`;
+                    
+                    sigCell.value = `${cengizName} ${cengizSurname}\n${sigTitle}`;
                     sigCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                     sigCell.font = { bold: true };
 
