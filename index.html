@@ -4696,22 +4696,22 @@
                             ) {
                                 diger += 1;
                             }
-                            // 3. MESAİ EKSTRA KONTROLLERİ: D-MUAYENE, D-OGM, D-SSB TOPLANTI
+                            // 3. DİĞER DURUMLAR / HASTANE / İZİNLER: D-MUAYENE, D-ÖLÜM İZNİ, REFAKATÇİ İZNİ, D-EVLİLİK İZNİ
                             else if (
                                 fullTextUpper.includes('MUAYENE') ||
-                                fullTextUpper.includes('OGM') ||
-                                fullTextUpper.includes('SSB') ||
-                                fullTextUpper.includes('TOPLANTI')
-                            ) {
-                                mesai += 1;
-                            }
-                            // 3. DİĞER İZİN KONTROLÜ: D-ÖLÜM İZNİ, REFAKATÇİ İZNİ, D-EVLİLİK İZNİ
-                            else if (
                                 fullTextUpper.includes('ÖLÜM') || fullTextUpper.includes('OLUM') ||
                                 fullTextUpper.includes('REFAKAT') ||
                                 fullTextUpper.includes('EVLİLİK') || fullTextUpper.includes('EVLILIK')
                             ) {
                                 diger += 1;
+                            }
+                            // 4. MESAİ EKSTRA KONTROLLERİ: D-OGM, D-SSB TOPLANTI
+                            else if (
+                                fullTextUpper.includes('OGM') ||
+                                fullTextUpper.includes('SSB') ||
+                                fullTextUpper.includes('TOPLANTI')
+                            ) {
+                                mesai += 1;
                             }
                             // 4. GÖREV (PLANNED / UNPLANNED) - SADECE GÖREV DURUMU
                             else if (st === AttendanceStatus.DUTY) {
@@ -5031,9 +5031,9 @@
                         '• PLANLI GÖREV: Yoklama Takip Sisteminde görev türü Planlı olarak girilen görev günleri.',
                         '• PLANSIZ GÖREV: Yoklama Takip Sisteminde görev türü Plansız (Acil/Yangın/Sondaj vb.) olarak girilen görev günleri.',
                         '• BEKLEME: Yoklama durumu veya açıklamasında Bekleme kaydı olan günler.',
-                        '• MESAİ: Normal mesai (X), resmi tatil/idari izinler (HT), görevsel toplantı ve muayeneler (D-MUAYENE, D-OGM, D-SSB TOPLANTI) ile yarım izinlerin mesai payları.',
+                        '• MESAİ: Normal mesai (X), resmi tatil/idari izinler (HT), görevsel toplantılar (D-OGM, D-SSB TOPLANTI) ile yarım izinlerin mesai payları.',
                         '• FMİ / Yİ / Gİ/Mİ: Fazla Mesai İzinleri (FMİ), Yıllık İzinler (Yİ), Günlük İzin (G.İ) ve Mazeret İzinleri (M.İ).',
-                        '• DİĞER: Ölüm İzni, Evlilik İzni, Refakatçi İzni, P.Yok (Personel Yok), Kurs, Rapor, Hastane ve Yok günleri.',
+                        '• DİĞER: D-Muayene (Hastane), Ölüm İzni, Evlilik İzni, Refakatçi İzni, P.Yok (Personel Yok), Kurs, Rapor, Hastane ve Yok günleri.',
                         `• TOPLAM GÜN: Personelin aktif çalıştığı dönemin (Mesai-Görev-Bekleme + İzin ve Diğer) toplam gün sayısıdır (Seçilen Dönem Hedefi: ${days.length} Gün).`
                     ];
 
