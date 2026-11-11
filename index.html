@@ -4705,13 +4705,13 @@
                             ) {
                                 mesai += 1;
                             }
-                            // 3. İZİN (G.İ) KONTROLÜ: D-ÖLÜM İZNİ, REFAKATÇİ İZNİ, D-EVLİLİK İZNİ
+                            // 3. DİĞER İZİN KONTROLÜ: D-ÖLÜM İZNİ, REFAKATÇİ İZNİ, D-EVLİLİK İZNİ
                             else if (
                                 fullTextUpper.includes('ÖLÜM') || fullTextUpper.includes('OLUM') ||
                                 fullTextUpper.includes('REFAKAT') ||
                                 fullTextUpper.includes('EVLİLİK') || fullTextUpper.includes('EVLILIK')
                             ) {
-                                gi += 1;
+                                diger += 1;
                             }
                             // 4. GÖREV (PLANNED / UNPLANNED) - SADECE GÖREV DURUMU
                             else if (st === AttendanceStatus.DUTY) {
@@ -4840,7 +4840,7 @@
                         { key: 'toplamIzin', width: 16 },
                         { key: 'oran', width: 24 },
                         { key: 'toplamGun', width: 16 },
-                        { key: 'durum', width: 44 }
+                        { key: 'durum', width: 62 }
                     ];
 
                     // Row 1: Title
@@ -4882,7 +4882,7 @@
                     summarySheet.getRow(3).height = 24;
                     const headersSummary = [
                         'FİLO', 'PLANLI GÖREV', 'PLANSIZ GÖREV', 'BEKLEME', 'MESAİ', 'TOPLAM',
-                        'FMİ', 'Yİ', 'Gİ', 'DİĞER', 'TOPLAM', 'GÖREV/İZİN ORANI', 'TOPLAM GÜN', 'DURUM / AÇIKLAMA'
+                        'FMİ', 'Yİ', 'Gİ/Mİ', 'DİĞER', 'TOPLAM', 'GÖREV/İZİN ORANI', 'TOPLAM GÜN', 'DURUM / AÇIKLAMA'
                     ];
                     headersSummary.forEach((h, idx) => {
                         const cell = summarySheet.getRow(3).getCell(idx + 1);
@@ -5032,8 +5032,8 @@
                         '• PLANSIZ GÖREV: Yoklama Takip Sisteminde görev türü Plansız (Acil/Yangın/Sondaj vb.) olarak girilen görev günleri.',
                         '• BEKLEME: Yoklama durumu veya açıklamasında Bekleme kaydı olan günler.',
                         '• MESAİ: Normal mesai (X), resmi tatil/idari izinler (HT), görevsel toplantı ve muayeneler (D-MUAYENE, D-OGM, D-SSB TOPLANTI) ile yarım izinlerin mesai payları.',
-                        '• FMİ / Yİ / Gİ: Fazla Mesai İzinleri (FMİ), Yıllık İzinler (Yİ), Günlük/Mazeret İzinleri ile Ölüm, Refakatçi ve Evlilik İzinleri (Gİ).',
-                        '• DİĞER: P.Yok (Personel Yok), Kurs, Rapor, Hastane ve Yok günleri.',
+                        '• FMİ / Yİ / Gİ/Mİ: Fazla Mesai İzinleri (FMİ), Yıllık İzinler (Yİ), Günlük İzin (G.İ) ve Mazeret İzinleri (M.İ).',
+                        '• DİĞER: Ölüm İzni, Evlilik İzni, Refakatçi İzni, P.Yok (Personel Yok), Kurs, Rapor, Hastane ve Yok günleri.',
                         `• TOPLAM GÜN: Personelin aktif çalıştığı dönemin (Mesai-Görev-Bekleme + İzin ve Diğer) toplam gün sayısıdır (Seçilen Dönem Hedefi: ${days.length} Gün).`
                     ];
 
@@ -5074,7 +5074,7 @@
                             { key: 'toplamIzin', width: 16 },
                             { key: 'oran', width: 24 },
                             { key: 'toplamGun', width: 16 },
-                            { key: 'durum', width: 44 }
+                            { key: 'durum', width: 62 }
                         ];
 
                         // Row 1: Title
@@ -5117,7 +5117,7 @@
                         const fHeaders = [
                             'SIRA', 'AD SOYADI', 'UNVAN',
                             'PLANLI GÖREV', 'PLANSIZ GÖREV', 'BEKLEME', 'MESAİ', 'TOPLAM',
-                            'FMİ', 'Yİ', 'Gİ', 'DİĞER', 'TOPLAM', 'GÖREV/İZİN ORANI', 'TOPLAM GÜN', 'DURUM / AÇIKLAMA'
+                            'FMİ', 'Yİ', 'Gİ/Mİ', 'DİĞER', 'TOPLAM', 'GÖREV/İZİN ORANI', 'TOPLAM GÜN', 'DURUM / AÇIKLAMA'
                         ];
                         fHeaders.forEach((h, idx) => {
                             const cell = sheet.getRow(3).getCell(idx + 1);
@@ -5131,6 +5131,15 @@
                         });
 
                         let currentRow = 4;
+
+                        const formatDateTR = (dStr) => {
+                            if (!dStr) return '';
+                            const parts = dStr.split('-');
+                            if (parts.length === 3) {
+                                return `${parts[2].padStart(2, '0')}.${parts[1].padStart(2, '0')}.${parts[0]}`;
+                            }
+                            return dStr;
+                        };
 
                         const renderPersonnelRows = (list, groupTitle = null) => {
                             if (groupTitle) {
@@ -5157,6 +5166,10 @@
                                 let persDurumText = `Tam Dönem (${days.length} Gün)`;
                                 if (st.isExcluded) {
                                     persDurumText = "* Birim Ortalamasına Dahil Edilmemiştir";
+                                } else if (p.activeUntil) {
+                                    persDurumText = `* Dönem İçi Ayrılan Personel (${persTotalGun} / ${days.length} Gün) (İLİŞİĞİ KESİLME TARİHİ: ${formatDateTR(p.activeUntil)})`;
+                                } else if (p.activeFrom && p.activeFrom > days[0]) {
+                                    persDurumText = `* Dönem İçi Katılan Personel (${persTotalGun} / ${days.length} Gün) (GİRİŞ TARİHİ: ${formatDateTR(p.activeFrom)})`;
                                 } else if (persTotalGun !== days.length) {
                                     persDurumText = `* Dönem İçi Katılan/Ayrılan Personel (${persTotalGun} / ${days.length} Gün)`;
                                 }
