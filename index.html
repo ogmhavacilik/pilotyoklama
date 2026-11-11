@@ -5317,15 +5317,7 @@
             const renderPersonRow = (p, i) => {
                 const s = att[p.id] || {};
                 const isWeeklyMode = rangeStartDate !== rangeEndDate;
-                let shouldBlur = false;
-                if (isWeeklyMode) {
-                    const dInR = getDaysInRange(rangeStartDate, rangeEndDate).filter(d => d.getDay() !== 0 && d.getDay() !== 6);
-                    const rInR = dInR.map(d => { 
-                        const dStr = normalizeDate(d); 
-                        return allRecs.find(r => r.personId === p.id && r.date === dStr && r.status && r.status !== ''); 
-                    }).filter(r => !!r);
-                    if (rInR.length > 0) { if (rInR.length < dInR.length) shouldBlur = true; else { const fR = rInR[0]; if (!rInR.every(r => r.status === fR.status && (r.dutyType || DutyType.PLANNED) === (fR.dutyType || DutyType.PLANNED) && r.dutyLocation === fR.dutyLocation && r.leaveType === fR.leaveType)) shouldBlur = true; } }
-                }
+                const shouldBlur = isWeeklyMode;
                 return (
                     <div key={p.id} className="relative group">
                         <div className="bg-forest-950/40 p-3 rounded border border-forest-800 flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between transition-all duration-300">
@@ -5359,7 +5351,7 @@
                                 </div>
                             </div>
                             <div className="relative flex-1 w-full">
-                                <div className={shouldBlur ? 'opacity-40 blur-[1px]' : ''}>
+                                <div className={shouldBlur ? 'opacity-30 blur-[1.5px] pointer-events-none select-none' : ''}>
                                     <AttendanceControl 
                                         personId={p.id} 
                                         state={s} 
@@ -5375,10 +5367,13 @@
                                     />
                                 </div>
                                 {shouldBlur && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px] rounded z-10">
-                                        <Button onClick={() => openDetailModalWithAuth(p)} className="shadow-lg">
+                                    <div className="absolute inset-0 flex items-center justify-center bg-forest-950/40 backdrop-blur-[1px] rounded z-10">
+                                        <button 
+                                            onClick={() => openDetailModalWithAuth(p)} 
+                                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2.5 rounded-lg transition-all flex items-center justify-center shadow-md border border-emerald-400/30 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                                        >
                                             <Edit2 size={16} className="mr-2" /> Ayrıntıyı Gör ve Düzenle
-                                        </Button>
+                                        </button>
                                     </div>
                                 )}
                             </div>
