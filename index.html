@@ -4721,9 +4721,13 @@
                                     planliGorev += 1;
                                 }
                             }
-                            // 5. MESAİ (Mevcut / X / HT / İdari İzin)
-                            else if (st === AttendanceStatus.PRESENT || st === AttendanceStatus.PUBLIC_HOLIDAY) {
+                            // 5. MESAİ (Mevcut / X)
+                            else if (st === AttendanceStatus.PRESENT) {
                                 mesai += 1;
+                            }
+                            // 5b. İDARI İZİN (PUBLIC_HOLIDAY -> DİĞER)
+                            else if (st === AttendanceStatus.PUBLIC_HOLIDAY) {
+                                diger += 1;
                             }
                             // 6. İZİN (LEAVE)
                             else if (st === AttendanceStatus.LEAVE) {
@@ -5031,9 +5035,9 @@
                         '• PLANLI GÖREV: Yoklama Takip Sisteminde görev türü Planlı olarak girilen görev günleri.',
                         '• PLANSIZ GÖREV: Yoklama Takip Sisteminde görev türü Plansız (Acil/Yangın/Sondaj vb.) olarak girilen görev günleri.',
                         '• BEKLEME: Yoklama durumu veya açıklamasında Bekleme kaydı olan günler.',
-                        '• MESAİ: Normal mesai (X), resmi tatil/idari izinler (HT), görevsel toplantılar (D-OGM, D-SSB TOPLANTI) ile yarım izinlerin mesai payları.',
+                        '• MESAİ: Normal mesai (X), görevsel toplantılar (D-OGM, D-SSB TOPLANTI) ile yarım izinlerin mesai payları.',
                         '• FMİ / Yİ / Gİ/Mİ: Fazla Mesai İzinleri (FMİ), Yıllık İzinler (Yİ), Günlük İzin (G.İ) ve Mazeret İzinleri (M.İ).',
-                        '• DİĞER: D-Muayene (Hastane), Ölüm İzni, Evlilik İzni, Refakatçi İzni, P.Yok (Personel Yok), Kurs, Rapor, Hastane ve Yok günleri.',
+                        '• DİĞER: İdari İzin (Resmi Tatil, Bayram vb.), D-Muayene (Hastane), Ölüm İzni, Evlilik İzni, Refakatçi İzni, P.Yok (Personel Yok), Kurs, Rapor, Hastane ve Yok günleri.',
                         `• TOPLAM GÜN: Personelin aktif çalıştığı dönemin (Mesai-Görev-Bekleme + İzin ve Diğer) toplam gün sayısıdır (Seçilen Dönem Hedefi: ${days.length} Gün).`
                     ];
 
